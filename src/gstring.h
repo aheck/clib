@@ -416,9 +416,17 @@ GString* g_string_truncate(GString *string, size_t len)
     return string;
 }
 
-GString* g_string_printf(GString *string, const char *format, ...)
+void g_string_append_vprintf(GString *string, const char *format, va_list args);
+
+void g_string_vprintf(GString *string, const char *format, va_list args)
 {
-    va_list args;
+    g_string_truncate(string, 0);
+
+    g_string_append_vprintf(string, format, args);
+}
+
+void g_string_append_vprintf(GString *string, const char *format, va_list args)
+{
     const char *c;
     char last_c = 0;
     int int_arg;
@@ -427,12 +435,8 @@ GString* g_string_printf(GString *string, const char *format, ...)
     char *cur;
 
     if (format == NULL) {
-        return string;
+        return;
     }
-
-    g_string_truncate(string, 0);
-
-    va_start(args, format);
 
     for (c = format; *c; c++) {
         if (last_c == '%') {
@@ -464,10 +468,26 @@ GString* g_string_printf(GString *string, const char *format, ...)
 
         last_c = *c;
     }
+}
 
+void g_string_printf(GString *string, const char *format, ...)
+{
+    va_list args;
+
+    g_string_truncate(string, 0);
+
+    va_start(args, format);
+    g_string_vprintf(string, format, args);
     va_end(args);
+}
 
-    return string;
+void g_string_append_printf(GString *string, const char *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    g_string_append_vprintf(string, format, args);
+    va_end(args);
 }
 
 bool g_string_equal(GString *v, GString *v2)

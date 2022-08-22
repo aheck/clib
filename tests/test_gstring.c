@@ -461,6 +461,19 @@ START_TEST(test_gstring_printf)
 }
 END_TEST
 
+START_TEST(test_gstring_append_printf)
+{
+    GString *string = NULL;
+    string = g_string_new("TEST: ");
+
+    g_string_append_printf(string, "String: '%s'; Number: %d; Hex: 0x%x", "STR1", 42, 0xa1);
+    ck_assert_int_eq(string->len, 43);
+    ck_assert_str_eq(string->str, "TEST: String: 'STR1'; Number: 42; Hex: 0xa1");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_equal)
 {
     GString *string1 = NULL;
@@ -574,6 +587,9 @@ Suite* gstring_suite(void)
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_printf);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_append_printf);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_equal);
