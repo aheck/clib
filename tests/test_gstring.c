@@ -67,6 +67,36 @@ START_TEST(test_gstring_new_big_string)
 }
 END_TEST
 
+START_TEST(test_gstring_new_len)
+{
+    GString *string = NULL;
+    const char *data = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\0abcdefghijklmnopqrstuvwxyz";
+
+    string = g_string_new_len(data, 52 + 1); // 2 * alphabet + internal null byte
+    ck_assert_ptr_nonnull(string);
+    ck_assert_ptr_nonnull(string->str);
+    ck_assert_int_eq(string->len, 52 + 1);
+    ck_assert_int_eq(string->allocated_len, 53 + 1);
+    ck_assert_int_eq(string->str[string->len], '\0'); // terminating null byte
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_sized_new)
+{
+    GString *string = NULL;
+
+    string = g_string_sized_new(4096);
+    ck_assert_ptr_nonnull(string);
+    ck_assert_ptr_nonnull(string->str);
+    ck_assert_int_eq(string->len, 0);
+    ck_assert_int_eq(string->allocated_len, 4096);
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_free)
 {
     GString *string = NULL;
@@ -472,6 +502,12 @@ Suite* gstring_suite(void)
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_new_big_string);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_new_len);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_sized_new);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_free);

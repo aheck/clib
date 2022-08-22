@@ -98,13 +98,13 @@ GString* g_string_new(const char *init)
 
     string = malloc(sizeof(GString));
     if (string == NULL) {
-        return string;
+        return NULL;
     }
 
     string->str = malloc(buf_size);
     if (string->str == NULL) {
         free(string);
-        return string;
+        return NULL;
     }
 
 #ifdef GSTRING_DEBUG
@@ -121,6 +121,53 @@ GString* g_string_new(const char *init)
 
     string->len = init_len;
     string->allocated_len = buf_size;
+
+    return string;
+}
+
+GString* g_string_new_len(const char *init, size_t len)
+{
+    GString *string;
+
+    string = malloc(sizeof(GString));
+    if (string == NULL) {
+        return NULL;
+    }
+
+    size_t buf_size = len + 1;
+
+    string->str = malloc(buf_size);
+    if (string->str == NULL) {
+        free(string);
+        return NULL;
+    }
+
+    memcpy(string->str, init, len);
+
+    string->str[buf_size - 1] = '\0';
+    string->len = len;
+    string->allocated_len = buf_size;
+
+    return string;
+}
+
+GString* g_string_sized_new(ssize_t dfl_size)
+{
+    GString *string;
+
+    string = malloc(sizeof(GString));
+    if (string == NULL) {
+        return NULL;
+    }
+
+    string->str = malloc(dfl_size);
+    if (string->str == NULL) {
+        free(string);
+        return NULL;
+    }
+
+    string->len = 0;
+    string->allocated_len = dfl_size;
 
     return string;
 }
