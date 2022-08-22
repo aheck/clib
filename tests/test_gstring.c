@@ -217,6 +217,36 @@ START_TEST(test_gstring_append_c_realloc)
 }
 END_TEST
 
+START_TEST(test_gstring_append_len)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_append_len(string, "!!!", 3);
+    ck_assert_int_eq(string->len, 14);
+    ck_assert_str_eq("Hello World!!!", string->str);
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_append_len_realloc)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+    const char *data = "!!!!!!!!!!!!!!!!!!!!!"; // 21 ! chars
+
+    g_string_append_len(string, data, 21);
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_int_eq(string->allocated_len, 66);
+    ck_assert_str_eq("Hello World!!!!!!!!!!!!!!!!!!!!!", string->str);
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_prepend)
 {
     GString *string = NULL;
@@ -267,6 +297,36 @@ START_TEST(test_gstring_prepend_c)
 }
 END_TEST
 
+START_TEST(test_gstring_prepend_len)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_prepend_len(string, "*=-", 3);
+    ck_assert_int_eq(string->len, 14);
+    ck_assert_str_eq(string->str, "*=-Hello World");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_prepend_len_realloc)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+    ck_assert_int_eq(string->allocated_len, GSTRING_MIN_BUF_SIZE);
+
+    g_string_prepend_len(string, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52);
+    ck_assert_int_eq(string->len, 63);
+    ck_assert_str_eq(string->str, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzHello World");
+    ck_assert_int_eq(string->allocated_len, 64 * 2);
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_prepend_c_realloc)
 {
     GString *string = NULL;
@@ -303,6 +363,39 @@ START_TEST(test_gstring_insert_realloc)
     string = g_string_new("Hello World");
 
     g_string_insert(string, 5, " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    ck_assert_int_eq(string->len, 64);
+    ck_assert_int_eq(string->allocated_len, 130);
+    ck_assert_str_eq(string->str, "Hello ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz World");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_insert_len)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_insert_len(string, 5, " you cruel", 10);
+    ck_assert_int_eq(string->len, 21);
+    ck_assert_str_eq(string->str, "Hello you cruel World");
+
+    g_string_insert_len(string, 21, "!!!", 3);
+    ck_assert_int_eq(string->len, 24);
+    ck_assert_str_eq(string->str, "Hello you cruel World!!!");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_insert_len_realloc)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_insert_len(string, 5, " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 53);
     ck_assert_int_eq(string->len, 64);
     ck_assert_int_eq(string->allocated_len, 130);
     ck_assert_str_eq(string->str, "Hello ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz World");
@@ -506,93 +599,42 @@ Suite* gstring_suite(void)
     tc_core = tcase_create("Core");
 
     tcase_add_test(tc_core, test_gstring_new_null);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_new_empty);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_new_small_string);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_new_big_string);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_new_len);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_sized_new);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_free);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_assign_empty);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_assign);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_append);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_append_realloc);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_append_c);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_append_c_realloc);
-    suite_add_tcase(s, tc_core);
-
+    tcase_add_test(tc_core, test_gstring_append_len);
+    tcase_add_test(tc_core, test_gstring_append_len_realloc);
     tcase_add_test(tc_core, test_gstring_prepend);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_prepend_realloc);
-    suite_add_tcase(s, tc_core);
-
+    tcase_add_test(tc_core, test_gstring_prepend_len);
+    tcase_add_test(tc_core, test_gstring_prepend_len_realloc);
     tcase_add_test(tc_core, test_gstring_prepend_c);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_prepend_c_realloc);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_insert);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_insert_realloc);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_insert_c);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_insert_c_realloc);
-    suite_add_tcase(s, tc_core);
-
+    tcase_add_test(tc_core, test_gstring_insert_len);
+    tcase_add_test(tc_core, test_gstring_insert_len_realloc);
     tcase_add_test(tc_core, test_gstring_erase);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_truncate);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_printf_int);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_printf_hex);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_printf_string);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_printf_float);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_printf);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_append_printf);
-    suite_add_tcase(s, tc_core);
-
     tcase_add_test(tc_core, test_gstring_equal);
+
     suite_add_tcase(s, tc_core);
 
     return s;

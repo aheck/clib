@@ -247,7 +247,7 @@ GString* g_string_append(GString *string, const char *val)
     return string;
 }
 
-GString* g_string_append_c(GString *string, const char c)
+GString* g_string_append_c(GString *string, char c)
 {
     size_t new_len;
 
@@ -262,6 +262,30 @@ GString* g_string_append_c(GString *string, const char c)
     string->str[string->len] = c;
     string->len = new_len;
     string->str[string->len] = '\0';
+
+    return string;
+}
+
+GString* g_string_append_len(GString *string, const char *val, ssize_t len)
+{
+    if (len <= 0) {
+        return string;
+    }
+
+    if (val == NULL) {
+        return string;
+    }
+
+    size_t new_len = len + string->len;
+
+    if (new_len + 1 > string->allocated_len) {
+        if (!_g_string_resize(string, new_len + 1)) {
+            return string;
+        }
+    }
+
+    memcpy(&string->str[string->len], val, len + 1);
+    string->len = new_len;
 
     return string;
 }
@@ -295,7 +319,7 @@ GString* g_string_prepend(GString *string, const char *val)
     return string;
 }
 
-GString* g_string_prepend_c(GString *string, const char c)
+GString* g_string_prepend_c(GString *string, char c)
 {
     size_t new_len;
 
@@ -312,6 +336,31 @@ GString* g_string_prepend_c(GString *string, const char c)
 
     // copy char that shall be prepended
     string->str[0] = c;
+
+    string->len = new_len;
+
+    return string;
+}
+
+GString* g_string_prepend_len(GString *string, const char *val, ssize_t len)
+{
+    if (val == NULL) {
+        return string;
+    }
+
+    size_t new_len = len + string->len;
+
+    if (new_len + 1 > string->allocated_len) {
+        if (!_g_string_resize(string, new_len + 1)) {
+            return string;
+        }
+    }
+
+    // move current string to end
+    memmove(&string->str[len], string->str, string->len + 1);
+
+    // copy string that shall be prepended
+    memcpy(string->str, val, len);
 
     string->len = new_len;
 
@@ -372,6 +421,35 @@ GString* g_string_insert_c(GString *string, ssize_t pos, char c)
     memmove(&string->str[pos + 1], &string->str[pos], string->len - pos + 1);
     string->str[pos] = c;
     string->len++;
+
+    return string;
+}
+
+GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssize_t len)
+{
+    if (pos < 0) {
+        return string;
+    }
+
+    // pos beyond last char of string
+    if (pos > string->len) {
+        return string;
+    }
+
+    if (len == 0) {
+        return string;
+    }
+
+    ssize_t new_len = string->len + len;
+
+    // enlarge buffer?
+    if (new_len + 1 > string->allocated_len) {
+        _g_string_resize(string, new_len + 1);
+    }
+
+    memmove(&string->str[pos + len], &string->str[pos], string->len - pos + 1);
+    memcpy(&string->str[pos], val, len);
+    string->len += len;
 
     return string;
 }
