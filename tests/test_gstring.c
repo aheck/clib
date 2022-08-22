@@ -281,6 +281,39 @@ START_TEST(test_gstring_insert_realloc)
 }
 END_TEST
 
+START_TEST(test_gstring_insert_c)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_insert_c(string, 5, '*');
+    ck_assert_int_eq(string->len, 12);
+    ck_assert_str_eq(string->str, "Hello* World");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_insert_c_realloc)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+    size_t len = string->len;
+
+    for (int i = 0; i < GSTRING_MIN_BUF_SIZE - len; i++) {
+        g_string_insert_c(string, 5, '*');
+    }
+
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_int_eq(string->allocated_len, 66);
+    ck_assert_str_eq(string->str, "Hello********************* World");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_erase)
 {
     GString *string = NULL;
@@ -478,6 +511,12 @@ Suite* gstring_suite(void)
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_insert_realloc);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_insert_c);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_insert_c_realloc);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_erase);

@@ -290,14 +290,41 @@ GString* g_string_insert(GString *string, ssize_t pos, const char *val)
         return string;
     }
 
+    ssize_t new_len = string->len + val_len;
+
     // enlarge buffer?
-    if (string->len + val_len + 1 > string->allocated_len) {
-        _g_string_resize(string, string->len + val_len + 1);
+    if (new_len + 1 > string->allocated_len) {
+        _g_string_resize(string, new_len + 1);
     }
 
     memmove(&string->str[pos + val_len], &string->str[pos], string->len - pos + 1);
     memcpy(&string->str[pos], val, val_len);
     string->len += val_len;
+
+    return string;
+}
+
+GString* g_string_insert_c(GString *string, ssize_t pos, char c)
+{
+    if (pos < 0) {
+        return string;
+    }
+
+    // pos beyond last char of string
+    if (pos > string->len) {
+        return string;
+    }
+
+    ssize_t new_len = string->len + 1;
+
+    // enlarge buffer?
+    if (new_len + 1 > string->allocated_len) {
+        _g_string_resize(string, new_len + 1);
+    }
+
+    memmove(&string->str[pos + 1], &string->str[pos], string->len - pos + 1);
+    string->str[pos] = c;
+    string->len++;
 
     return string;
 }
