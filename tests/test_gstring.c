@@ -115,6 +115,21 @@ START_TEST(test_gstring_assign)
 }
 END_TEST
 
+START_TEST(test_gstring_append)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_append(string, "!!!");
+    ck_assert_int_eq(string->len, 14);
+    ck_assert_int_eq(string->allocated_len, 32);
+    ck_assert_str_eq("Hello World!!!", string->str);
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_append_realloc)
 {
     GString *string = NULL;
@@ -129,9 +144,44 @@ START_TEST(test_gstring_append_realloc)
 
     ck_assert_int_eq(string->len, 52);
     // required would be 53 bytes but GString reallocs double the requested space
-    ck_assert_int_eq(string->allocated_len, 106);
+    ck_assert_int_eq(string->allocated_len, 53 * 2);
 
     ck_assert_str_eq("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", string->str);
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_append_c)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
+    g_string_append_c(string, '!');
+    ck_assert_int_eq(string->len, 12);
+    ck_assert_int_eq(string->allocated_len, 32);
+    ck_assert_str_eq("Hello World!", string->str);
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_append_c_realloc)
+{
+    GString *string = NULL;
+    size_t len;
+
+    string = g_string_new("Hello World");
+    len = string->len;
+
+    for (int i = 0; i < GSTRING_MIN_BUF_SIZE - len; i++) {
+        g_string_append_c(string, '!');
+    }
+
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_int_eq(string->allocated_len, 66);
+    ck_assert_str_eq("Hello World!!!!!!!!!!!!!!!!!!!!!", string->str);
 
     g_string_free(string, true);
 }
@@ -162,6 +212,37 @@ START_TEST(test_gstring_prepend_realloc)
     ck_assert_int_eq(string->len, 63);
     ck_assert_str_eq(string->str, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzHello World");
     ck_assert_int_eq(string->allocated_len, 64 * 2);
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_prepend_c)
+{
+    GString *string = NULL;
+    size_t len;
+
+    string = g_string_new("Hello World");
+    len = string->len;
+
+    for (int i = 0; i < GSTRING_MIN_BUF_SIZE - len; i++) {
+        g_string_prepend_c(string, '=');
+    }
+
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_int_eq(string->allocated_len, 66);
+    ck_assert_str_eq(string->str, "=====================Hello World");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_prepend_c_realloc)
+{
+    GString *string = NULL;
+
+    string = g_string_new("Hello World");
+
 
     g_string_free(string, true);
 }
@@ -369,13 +450,28 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_assign);
     suite_add_tcase(s, tc_core);
 
+    tcase_add_test(tc_core, test_gstring_append);
+    suite_add_tcase(s, tc_core);
+
     tcase_add_test(tc_core, test_gstring_append_realloc);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_append_c);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_append_c_realloc);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_prepend);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_prepend_realloc);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_prepend_c);
+    suite_add_tcase(s, tc_core);
+
+    tcase_add_test(tc_core, test_gstring_prepend_c_realloc);
     suite_add_tcase(s, tc_core);
 
     tcase_add_test(tc_core, test_gstring_insert);
