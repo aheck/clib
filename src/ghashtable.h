@@ -36,7 +36,8 @@
 typedef uint32_t (*GHashFunc)(void *key);
 typedef bool (*GEqualFunc)(void *a, void *b);
 typedef void (*GDestroyNotify)(void *data);
-bool (*GHRFunc) (void *key, void *value, void *user_data);
+typedef void (*GHFunc) (void *key, void *value, void *user_data);
+typedef bool (*GHRFunc) (void *key, void *value, void *user_data);
 
 uint32_t g_int_hash(void *v)
 {
@@ -76,6 +77,7 @@ bool g_str_equal(void *v1, void *v2)
 struct GHashTableSlot {
     void *key;
     void *value;
+    bool used;
 };
 
 typedef struct GHashTable {
@@ -134,6 +136,129 @@ GHashTable *g_hash_table_new_full(GHashFunc hash_func, GEqualFunc key_equal_func
     hash_table->value_destroy_func = value_destroy_func;
 
     return hash_table;
+}
+
+uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slot)
+{
+    for (uint32_t i = start_slot; i < hash_table->num_slots; i++) {
+        if (hash_table->slots[i].used == false) {
+            return i;
+        }
+    }
+
+    for (uint32_t i = 0; i < start_slot; i++) {
+        if (hash_table->slots[i].used == false) {
+            return i;
+        }
+    }
+
+    fprintf(stderr, "ERROR: _g_hash_table_find_slot_by_key: Failed to find an empty slot. This is a bug!!!");
+    int *ptr = NULL;
+    *ptr = 0;
+
+    return 0;
+}
+
+uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, bool *ret_found)
+{
+    uint32_t hash = hash_table->hash_func(key);
+    uint32_t start_slot = hash % hash_table->num_slots;
+
+    for (uint32_t i = start_slot; i < hash_table->num_slots; i++) {
+        if (hash_table->slots[i].used == false) {
+            continue;
+        }
+
+        if (hash_table->key_equal_func(key, hash_table->slots[i].key)) {
+            *ret_found = true;
+            return i;
+        }
+    }
+
+    for (uint32_t i = 0; i < start_slot; i++) {
+        if (hash_table->slots[i].used == false) {
+            continue;
+        }
+
+        if (hash_table->key_equal_func(key, hash_table->slots[i].key)) {
+            *ret_found = true;
+            return i;
+        }
+    }
+
+    *ret_found = false;
+    return 0;
+}
+
+void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
+{
+    uint32_t hash = hash_table->hash_func(key);
+    uint32_t start_slot = hash % hash_table->num_slots;
+    uint32_t slot = 0;
+
+    if (hash_table->slots[start_slot].used == false) {
+        slot = start_slot;
+    } else {
+        // hashed slot is already used
+        // search for next free one
+        slot = _g_hash_table_find_free_slot(hash_table, start_slot);
+    }
+
+    hash_table->slots[slot].key = key;
+    hash_table->slots[slot].value = value;
+}
+
+uint32_t g_hash_table_size (GHashTable *hash_table)
+{
+    return hash_table->num_used;
+}
+
+void* g_hash_table_lookup(GHashTable *hash_table, void *key)
+{
+    bool found = false;
+    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, &found);
+
+    if (!found) {
+        return NULL;
+    }
+
+    return hash_table->slots[slot].value;
+}
+
+void g_hash_table_foreach(GHashTable *hash_table, GHFunc func, void *user_data)
+{
+    for (uint32_t i = 0; i < hash_table->num_slots; i++) {
+        if (hash_table->slots[i].used == true) {
+            func(hash_table->slots[i].key, hash_table->slots[i].value, user_data);
+        }
+    }
+}
+
+bool g_hash_table_remove(GHashTable *hash_table, void *key)
+{
+    uint32_t hash = hash_table->hash_func(key);
+    uint32_t start_slot = hash % hash_table->num_slots;
+    bool found = false;
+
+    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, &found);
+
+    if (!found) {
+        return false;
+    }
+
+    if (hash_table->key_destroy_func) {
+        hash_table->key_destroy_func(hash_table->slots[slot].key);
+    }
+
+    if (hash_table->value_destroy_func) {
+        hash_table->value_destroy_func(hash_table->slots[slot].value);
+    }
+
+    hash_table->slots[slot].key = 0;
+    hash_table->slots[slot].value = 0;
+    hash_table->slots[slot].used = false;
+
+    return true;
 }
 
 void g_hash_table_destroy(GHashTable *hash_table)
