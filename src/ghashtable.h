@@ -41,7 +41,7 @@ typedef bool (*GHRFunc) (void *key, void *value, void *user_data);
 
 uint32_t g_int_hash(void *v)
 {
-    uint32_t x = *((uint32_t*) v);
+    uint32_t x = (uint32_t*) v;
 
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -52,7 +52,7 @@ uint32_t g_int_hash(void *v)
 
 bool g_int_equal(void *v1, void *v2)
 {
-    return *((uint32_t*) v1) == *((uint32_t*) v2);
+    return (uint32_t*) v1 == (uint32_t*) v2;
 }
 
 uint32_t g_str_hash(void *v)
@@ -206,9 +206,38 @@ void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
 
     hash_table->slots[slot].key = key;
     hash_table->slots[slot].value = value;
+    hash_table->slots[slot].used = true;
+    hash_table->num_used++;
 }
 
-uint32_t g_hash_table_size (GHashTable *hash_table)
+bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
+{
+    uint32_t old_num_slots = hash_table->num_slots;
+    struct GHashTableSlot *old_slots = hash_table->slots;
+    struct GHashTableSlot *new_slots;
+
+    size_t buf_size = new_num_slots * sizeof(struct GHashTableSlot);
+    new_slots = malloc(buf_size);
+    if (new_slots == NULL) {
+        return false;
+    }
+
+    hash_table->slots = new_slots;
+    hash_table->num_used = 0;
+    hash_table->num_slots = new_num_slots;
+
+    memset(hash_table->slots, 0, buf_size);
+
+    for (uint32_t i = 0; i < old_num_slots; i++) {
+        g_hash_table_insert(hash_table, old_slots[i].key, old_slots[i].value);
+    }
+
+    free(old_slots);
+
+    return true;
+}
+
+uint32_t g_hash_table_size(GHashTable *hash_table)
 {
     return hash_table->num_used;
 }
@@ -257,6 +286,7 @@ bool g_hash_table_remove(GHashTable *hash_table, void *key)
     hash_table->slots[slot].key = 0;
     hash_table->slots[slot].value = 0;
     hash_table->slots[slot].used = false;
+    hash_table->num_used--;
 
     return true;
 }
