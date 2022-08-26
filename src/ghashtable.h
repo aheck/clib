@@ -41,7 +41,7 @@ typedef bool (*GHRFunc) (void *key, void *value, void *user_data);
 
 uint32_t g_int_hash(void *v)
 {
-    uint32_t x = (uint32_t*) v;
+    uint32_t x = (uint32_t) (uint64_t) v; // cast to uint64_t to omit warning
 
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -152,18 +152,20 @@ uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slo
         }
     }
 
-    fprintf(stderr, "ERROR: _g_hash_table_find_slot_by_key: Failed to find an empty slot. This is a bug!!!");
+    fprintf(stderr, "BUG: _g_hash_table_find_free_slot: Failed to find an empty slot.");
     int *ptr = NULL;
     *ptr = 0;
 
     return 0;
 }
 
-uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, bool *ret_found)
+uint32_t _g_hash_table_calc_start_slot(GHashTable *hash_table, void *key)
 {
-    uint32_t hash = hash_table->hash_func(key);
-    uint32_t start_slot = hash % hash_table->num_slots;
+    return hash_table->hash_func(key) % hash_table->num_slots;
+}
 
+uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint32_t start_slot, bool *ret_found)
+{
     for (uint32_t i = start_slot; i < hash_table->num_slots; i++) {
         if (hash_table->slots[i].used == false) {
             continue;
@@ -192,8 +194,7 @@ uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, bool 
 
 void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
 {
-    uint32_t hash = hash_table->hash_func(key);
-    uint32_t start_slot = hash % hash_table->num_slots;
+    uint32_t start_slot = _g_hash_table_calc_start_slot(hash_table, key);
     uint32_t slot = 0;
 
     if (hash_table->slots[start_slot].used == false) {
@@ -245,7 +246,8 @@ uint32_t g_hash_table_size(GHashTable *hash_table)
 void* g_hash_table_lookup(GHashTable *hash_table, void *key)
 {
     bool found = false;
-    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, &found);
+    uint32_t start_slot = _g_hash_table_calc_start_slot(hash_table, key);
+    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, start_slot, &found);
 
     if (!found) {
         return NULL;
@@ -265,11 +267,9 @@ void g_hash_table_foreach(GHashTable *hash_table, GHFunc func, void *user_data)
 
 bool g_hash_table_remove(GHashTable *hash_table, void *key)
 {
-    uint32_t hash = hash_table->hash_func(key);
-    uint32_t start_slot = hash % hash_table->num_slots;
     bool found = false;
-
-    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, &found);
+    uint32_t start_slot = _g_hash_table_calc_start_slot(hash_table, key);
+    uint32_t slot = _g_hash_table_find_slot_by_key(hash_table, key, start_slot, &found);
 
     if (!found) {
         return false;
