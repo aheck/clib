@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
 #include <check.h>
 
 #include "ghashtable.h"
@@ -222,6 +224,7 @@ START_TEST(test_ghashtable_double_insert)
     htable = g_hash_table_new(fake_int_hash_0, g_int_equal);
 
     ck_assert_int_eq(htable->num_used, 0);
+
     // first insert
     g_hash_table_insert(htable, (void*) 42, (void*) "Answer to everything");
     ck_assert_int_eq(htable->num_used, 1);
@@ -239,6 +242,27 @@ START_TEST(test_ghashtable_double_insert)
     ck_assert_int_eq(htable->slots[1].used, false);
 
     g_hash_table_destroy(htable);
+}
+END_TEST
+
+START_TEST(test_ghashtable_resize)
+{
+    GHashTable *htable = NULL;
+    htable = g_hash_table_new(g_int_hash, g_int_equal);
+
+    uint32_t init_num_slots = htable->num_slots;
+    uint32_t tipping_point = ceil(GHASHTABLE_MAX_LOAD * htable->num_slots);
+
+    for (uint32_t i = 0; i <= tipping_point; i++) {
+        g_hash_table_insert(htable, (void*) (uint64_t) i, (void*) "Dummy String");
+    }
+
+    ck_assert_int_eq(htable->num_slots, init_num_slots * 2);
+
+    for (uint32_t i = 0; i <= tipping_point; i++) {
+        void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
+        ck_assert_ptr_nonnull(result);
+    }
 }
 END_TEST
 
@@ -260,6 +284,7 @@ Suite* ghashtable_suite(void)
     tcase_add_test(tc_core, test_ghashtable_lookup_after_remove);
     tcase_add_test(tc_core, test_ghashtable_insert_after_remove);
     tcase_add_test(tc_core, test_ghashtable_double_insert);
+    tcase_add_test(tc_core, test_ghashtable_resize);
 
     suite_add_tcase(s, tc_core);
 

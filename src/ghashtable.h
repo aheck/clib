@@ -82,14 +82,17 @@ struct GHashTableSlot {
 };
 
 typedef struct GHashTable {
-    size_t num_slots;
-    size_t num_used;
+    uint32_t num_slots;
+    uint32_t num_used;
+    uint32_t resize_threshold;
     GHashFunc hash_func;
     GEqualFunc key_equal_func;
     GDestroyNotify key_destroy_func;
     GDestroyNotify value_destroy_func;
     struct GHashTableSlot *slots;
 } GHashTable;
+
+void g_hash_table_insert(GHashTable *hash_table, void *key, void *value);
 
 GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
 {
@@ -108,6 +111,7 @@ GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
 
     hash_table->num_slots = GHASHTABLE_MIN_SLOTS;
     hash_table->num_used = 0;
+    hash_table->resize_threshold = hash_table->num_slots * GHASHTABLE_MAX_LOAD;
     hash_table->hash_func = hash_func;
     hash_table->key_equal_func = key_equal_func;
     hash_table->key_destroy_func = NULL;
@@ -203,8 +207,40 @@ uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint3
     return 0;
 }
 
+bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
+{
+    uint32_t old_num_slots = hash_table->num_slots;
+    struct GHashTableSlot *old_slots = hash_table->slots;
+    struct GHashTableSlot *new_slots;
+
+    size_t buf_size = new_num_slots * sizeof(struct GHashTableSlot);
+    new_slots = malloc(buf_size);
+    if (new_slots == NULL) {
+        return false;
+    }
+
+    hash_table->slots = new_slots;
+    hash_table->num_used = 0;
+    hash_table->num_slots = new_num_slots;
+    hash_table->resize_threshold = hash_table->num_slots * GHASHTABLE_MAX_LOAD;
+
+    memset(hash_table->slots, 0, buf_size);
+
+    for (uint32_t i = 0; i < old_num_slots; i++) {
+        g_hash_table_insert(hash_table, old_slots[i].key, old_slots[i].value);
+    }
+
+    free(old_slots);
+
+    return true;
+}
+
 void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
 {
+    if (hash_table->num_used >= hash_table->resize_threshold) {
+        _g_hash_table_resize(hash_table, hash_table->num_slots * 2);
+    }
+
     uint32_t start_slot = _g_hash_table_calc_start_slot(hash_table, key);
     uint32_t slot = 0;
 
@@ -236,33 +272,6 @@ void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
         hash_table->slots[slot].deleted = false;
         hash_table->num_used++;
     }
-}
-
-bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
-{
-    uint32_t old_num_slots = hash_table->num_slots;
-    struct GHashTableSlot *old_slots = hash_table->slots;
-    struct GHashTableSlot *new_slots;
-
-    size_t buf_size = new_num_slots * sizeof(struct GHashTableSlot);
-    new_slots = malloc(buf_size);
-    if (new_slots == NULL) {
-        return false;
-    }
-
-    hash_table->slots = new_slots;
-    hash_table->num_used = 0;
-    hash_table->num_slots = new_num_slots;
-
-    memset(hash_table->slots, 0, buf_size);
-
-    for (uint32_t i = 0; i < old_num_slots; i++) {
-        g_hash_table_insert(hash_table, old_slots[i].key, old_slots[i].value);
-    }
-
-    free(old_slots);
-
-    return true;
 }
 
 uint32_t g_hash_table_size(GHashTable *hash_table)
