@@ -77,7 +77,8 @@ bool g_str_equal(void *v1, void *v2)
 struct GHashTableSlot {
     void *key;
     void *value;
-    bool used;
+    bool used : 1;
+    bool deleted : 1;
 };
 
 typedef struct GHashTable {
@@ -138,16 +139,24 @@ GHashTable *g_hash_table_new_full(GHashFunc hash_func, GEqualFunc key_equal_func
     return hash_table;
 }
 
-uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slot)
+uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slot, void *key)
 {
     for (uint32_t i = start_slot; i < hash_table->num_slots; i++) {
         if (hash_table->slots[i].used == false) {
+            return i;
+        }
+
+        if (key && hash_table->key_equal_func(hash_table->slots[i].key, key)) {
             return i;
         }
     }
 
     for (uint32_t i = 0; i < start_slot; i++) {
         if (hash_table->slots[i].used == false) {
+            return i;
+        }
+
+        if (key && hash_table->key_equal_func(hash_table->slots[i].key, key)) {
             return i;
         }
     }
@@ -167,8 +176,9 @@ uint32_t _g_hash_table_calc_start_slot(GHashTable *hash_table, void *key)
 uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint32_t start_slot, bool *ret_found)
 {
     for (uint32_t i = start_slot; i < hash_table->num_slots; i++) {
-        if (hash_table->slots[i].used == false) {
-            continue;
+        if (hash_table->slots[i].used == false && hash_table->slots[i].deleted == false) {
+            *ret_found = false;
+            return 0;
         }
 
         if (hash_table->key_equal_func(key, hash_table->slots[i].key)) {
@@ -179,7 +189,8 @@ uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint3
 
     for (uint32_t i = 0; i < start_slot; i++) {
         if (hash_table->slots[i].used == false) {
-            continue;
+            *ret_found = false;
+            return 0;
         }
 
         if (hash_table->key_equal_func(key, hash_table->slots[i].key)) {
@@ -200,15 +211,31 @@ void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
     if (hash_table->slots[start_slot].used == false) {
         slot = start_slot;
     } else {
+        // check if the value is already in the hash table
+
         // hashed slot is already used
         // search for next free one
-        slot = _g_hash_table_find_free_slot(hash_table, start_slot);
+        slot = _g_hash_table_find_free_slot(hash_table, start_slot, key);
     }
 
-    hash_table->slots[slot].key = key;
-    hash_table->slots[slot].value = value;
-    hash_table->slots[slot].used = true;
-    hash_table->num_used++;
+    if (hash_table->slots[slot].used) {
+        // key already exists in the hash table
+        if (hash_table->key_destroy_func && key != hash_table->slots[slot].key) {
+            hash_table->key_destroy_func(hash_table->slots[slot].key);
+        }
+
+        if (hash_table->value_destroy_func && value != hash_table->slots[slot].value) {
+            hash_table->value_destroy_func(hash_table->slots[slot].value);
+        }
+
+        hash_table->slots[slot].value = value;
+    } else {
+        hash_table->slots[slot].key = key;
+        hash_table->slots[slot].value = value;
+        hash_table->slots[slot].used = true;
+        hash_table->slots[slot].deleted = false;
+        hash_table->num_used++;
+    }
 }
 
 bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
@@ -286,6 +313,7 @@ bool g_hash_table_remove(GHashTable *hash_table, void *key)
     hash_table->slots[slot].key = 0;
     hash_table->slots[slot].value = 0;
     hash_table->slots[slot].used = false;
+    hash_table->slots[slot].deleted = true;
     hash_table->num_used--;
 
     return true;
