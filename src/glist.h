@@ -32,9 +32,11 @@ typedef struct GList {
     struct GList *prev;
 } GList;
 
+GList* g_list_insert_before(GList *list, GList *sibling, void *data);
 GList* g_list_first(GList *list);
 GList* g_list_last(GList *list);
 GList* g_list_alloc();
+GList* g_list_nth(GList *list, uint32_t n);
 
 GList* g_list_append(GList *list, void *data)
 {
@@ -74,32 +76,142 @@ GList* g_list_prepend(GList *list, void *data)
 
 GList* g_list_insert(GList *list, void *data, int32_t position)
 {
-    return NULL;
+    if (position < 0) {
+        return g_list_append(list, data);
+    }
+
+    GList *sibling = g_list_nth(list, position);
+    if (sibling) {
+        return g_list_insert_before(list, sibling, data);
+    }
+
+    return list;
 }
 
 GList* g_list_insert_before(GList *list, GList *sibling, void *data)
 {
-    return NULL;
+    if (sibling == NULL) {
+        return g_list_append(list, data);
+    }
+
+    GList *new_elem = g_list_alloc();
+    if (new_elem == NULL) {
+        return NULL;
+    }
+
+    new_elem->data = data;
+
+    if (sibling->prev) {
+        sibling->prev->next = new_elem;
+    }
+
+    new_elem->prev = sibling->prev;
+    new_elem->next = sibling;
+
+    sibling->prev = new_elem;
+
+    return list;
 }
 
 GList* g_list_remove(GList *list, const void *data)
 {
-    return NULL;
+    GList *cur = list;
+
+    while (cur != NULL) {
+        if (cur->data == data) {
+            if (cur->prev) {
+                cur->prev->next = cur->next;
+            }
+
+            if (cur->next) {
+                cur->next->prev = cur->prev;
+            }
+
+            if (cur == list) {
+                if (cur->prev) {
+                    list = cur->prev;
+                } else {
+                    list = cur->next;
+                }
+            }
+
+            free(cur);
+            return list;
+        }
+
+        cur = cur->next;
+    }
+
+    return list;
 }
 
 GList* g_list_remove_link(GList *list, GList *llink)
 {
-    return NULL;
+    if (llink == NULL) {
+        return list;
+    }
+
+    if (llink->prev) {
+        llink->prev->next = llink->next;
+    }
+
+    if (llink->next) {
+        llink->next->prev = llink->prev;
+    }
+
+    if (list == llink) {
+        if (llink->prev) {
+            list = llink->prev;
+        } else {
+            list = llink->next;
+        }
+    }
+
+    llink->prev = llink->next = NULL;
+
+    return list;
 }
 
 GList* g_list_delete_link(GList *list, GList *link_)
 {
-    return NULL;
+    list = g_list_remove_link(list, link_);
+    free(link_);
+    return list;
 }
 
 GList* g_list_remove_all(GList *list, const void *data)
 {
-    return NULL;
+    GList *next;
+    GList *cur = list;
+
+    while (cur != NULL) {
+        if (cur->data == data) {
+            if (cur->prev) {
+                cur->prev->next = cur->next;
+            }
+
+            if (cur->next) {
+                cur->next->prev = cur->prev;
+            }
+
+            if (cur == list) {
+                if (cur->prev) {
+                    list = cur->prev;
+                } else {
+                    list = cur->next;
+                }
+            }
+
+            next = cur->next;
+            free(cur);
+            cur = next;
+            continue;
+        }
+
+        cur = cur->next;
+    }
+
+    return list;
 }
 
 void g_list_free(GList *list)
@@ -124,9 +236,11 @@ GList* g_list_alloc()
     return (GList*) malloc(sizeof(GList));
 }
 
+#define g_list_free1 g_list_free_1
+
 void g_list_free_1(GList *list)
 {
-
+    free(list);
 }
 
 uint32_t g_list_length(GList *list)
@@ -136,8 +250,6 @@ uint32_t g_list_length(GList *list)
     if (list == NULL) {
         return 0;
     }
-
-    list = g_list_first(list);
 
     for (len = 1; list->next != NULL; list = list->next) {
         len++;
@@ -163,7 +275,10 @@ GList* g_list_concat(GList *list1, GList *list2)
 
 void g_list_foreach(GList *list, GFunc func, void *user_data)
 {
-
+    while (list) {
+        func(list->data, user_data);
+        list = list->next;
+    }
 }
 
 GList* g_list_first(GList *list)
@@ -196,11 +311,27 @@ GList* g_list_last(GList *list)
 
 GList* g_list_nth(GList *list, uint32_t n)
 {
+    uint32_t i;
+
+    for (i = 0; list != NULL; list = list->next, i++) {
+        if (i == n) {
+            return list;
+        }
+    }
+
     return NULL;
 }
 
 void* g_list_nth_data(GList *list, uint32_t n)
 {
+    uint32_t i;
+
+    for (i = 0; list != NULL; list = list->next, i++) {
+        if (i == n) {
+            return list->data;
+        }
+    }
+
     return NULL;
 }
 
