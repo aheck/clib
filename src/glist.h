@@ -62,7 +62,7 @@ GList* g_list_append(GList *list, void *data)
 
 GList* g_list_prepend(GList *list, void *data)
 {
-    GList *first = g_list_last(list);
+    GList *first = g_list_first(list);
 
     GList *new_entry = g_list_alloc();
     if (new_entry == NULL) {
@@ -73,7 +73,9 @@ GList* g_list_prepend(GList *list, void *data)
     new_entry->prev = NULL;
     new_entry->next = first;
 
-    first->prev = new_entry;
+    if (first != NULL) {
+        first->prev = new_entry;
+    }
 
     return new_entry;
 }
