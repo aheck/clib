@@ -55,6 +55,8 @@ GList* g_list_append(GList *list, void *data)
         return new_entry;
     }
 
+    last->next = new_entry;
+
     return list;
 }
 
@@ -70,6 +72,8 @@ GList* g_list_prepend(GList *list, void *data)
     new_entry->data = data;
     new_entry->prev = NULL;
     new_entry->next = first;
+
+    first->prev = new_entry;
 
     return new_entry;
 }
@@ -260,17 +264,69 @@ uint32_t g_list_length(GList *list)
 
 GList* g_list_copy(GList *list)
 {
-    return NULL;
+    if (list == NULL) {
+        return NULL;
+    }
+
+    uint32_t len = g_list_length(list);
+
+    GList *elems = (GList*) malloc(sizeof(GList) * len);
+    if (elems == NULL) {
+        return NULL;
+    }
+
+    for (uint32_t i; i < len; list = list->next, i++) {
+        elems[i].data = list->data;
+        if (i > 0) {
+            elems[i].prev = &elems[i - 1];
+        } else {
+            elems[i].prev = NULL;
+        }
+
+        if (i < (len - 1)) {
+            elems[i].next = &elems[i + 1];
+        } else {
+            elems[i].next = NULL;
+        }
+    }
+
+    return elems;
 }
 
 GList* g_list_reverse(GList *list)
 {
-    return NULL;
+    if (list == NULL) {
+        return NULL;
+    }
+
+    GList *cur = list;
+    GList *old_next;
+
+    while (cur) {
+        old_next = cur->next;
+
+        cur->next = cur->prev;
+        cur->prev = old_next;
+
+        list = cur;
+        cur = old_next;
+    }
+
+    return list;
 }
 
 GList* g_list_concat(GList *list1, GList *list2)
 {
-    return NULL;
+    if (list1 == NULL || list2 == NULL) {
+        return list1;
+    }
+
+    GList *last1 = g_list_last(list1);
+
+    last1->next = list2;
+    list2->prev = last1;
+
+    return list1;
 }
 
 void g_list_foreach(GList *list, GFunc func, void *user_data)
@@ -337,25 +393,65 @@ void* g_list_nth_data(GList *list, uint32_t n)
 
 GList* g_list_nth_prev(GList *list, uint32_t n)
 {
+    uint32_t i;
+
+    for (i = 0; list != NULL; list = list->prev, i++) {
+        if (i == n) {
+            return list;
+        }
+    }
+
     return NULL;
 }
 
 GList* g_list_find(GList *list, const void *data)
 {
+    while (list) {
+        if (list->data == data) {
+            return list;
+        }
+
+        list = list->next;
+    }
+
     return NULL;
 }
 
 GList* g_list_find_custom(GList *list, const void *data, GCompareFunc func)
 {
+    while (list) {
+        if (func(list->data, data)) {
+            return list;
+        }
+
+        list = list->next;
+    }
+
     return NULL;
 }
 
 int32_t g_list_position(GList *list, GList *llink)
 {
-    return 0;
+    uint32_t i;
+
+    for (i = 0; list != NULL; list = list->next, i++) {
+        if (list == llink) {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 int32_t g_list_index(GList *list, const void *data)
 {
-    return 0;
+    uint32_t i;
+
+    for (i = 0; list != NULL; list = list->next, i++) {
+        if (list->data == data) {
+            return i;
+        }
+    }
+
+    return -1;
 }
