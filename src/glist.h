@@ -270,29 +270,35 @@ GList* g_list_copy(GList *list)
         return NULL;
     }
 
-    uint32_t len = g_list_length(list);
+    GList *new_list = NULL;
+    GList *new_prev = NULL;
 
-    GList *elems = (GList*) malloc(sizeof(GList) * len);
-    if (elems == NULL) {
-        return NULL;
-    }
+    while (list) {
+        GList *new_elem = g_list_alloc();
+        if (new_elem == NULL) {
+            if (new_list) {
+                g_list_free(new_list);
+            }
 
-    for (uint32_t i; i < len; list = list->next, i++) {
-        elems[i].data = list->data;
-        if (i > 0) {
-            elems[i].prev = &elems[i - 1];
-        } else {
-            elems[i].prev = NULL;
+            return NULL;
         }
 
-        if (i < (len - 1)) {
-            elems[i].next = &elems[i + 1];
-        } else {
-            elems[i].next = NULL;
+        if (new_list == NULL) {
+            new_list = new_elem;
         }
+
+        new_elem->data = list->data;
+        new_elem->prev = new_prev;
+        new_elem->next = NULL;
+        if (new_prev) {
+            new_prev->next = new_elem;
+        }
+
+        new_prev = new_elem;
+        list = list->next;
     }
 
-    return elems;
+    return new_list;
 }
 
 GList* g_list_reverse(GList *list)

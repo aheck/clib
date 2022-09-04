@@ -66,33 +66,6 @@ START_TEST(test_glist_prepend)
 }
 END_TEST
 
-START_TEST(test_glist_reverse)
-{
-    GList *list = NULL;
-    list = g_list_append(list, "Element 1");
-    list = g_list_append(list, "Element 2");
-    list = g_list_append(list, "Element 3");
-
-    ck_assert_ptr_nonnull(list);
-    ck_assert_int_eq(g_list_length(list), 3);
-
-    ck_assert_str_eq(list->data, "Element 1");
-    ck_assert_str_eq(list->next->data, "Element 2");
-    ck_assert_str_eq(list->next->next->data, "Element 3");
-
-    list = g_list_reverse(list);
-
-    ck_assert_ptr_nonnull(list);
-    ck_assert_int_eq(g_list_length(list), 3);
-
-    ck_assert_str_eq(list->data, "Element 3");
-    ck_assert_str_eq(list->next->data, "Element 2");
-    ck_assert_str_eq(list->next->next->data, "Element 1");
-
-    g_list_free(list);
-}
-END_TEST
-
 START_TEST(test_glist_insert)
 {
     GList *list = NULL;
@@ -245,6 +218,113 @@ START_TEST(test_glist_delete_link)
 }
 END_TEST
 
+START_TEST(test_glist_remove_all)
+{
+    GList *list = NULL;
+    list = g_list_append(list, "Element 1");
+    list = g_list_append(list, "Delete Me");
+    list = g_list_append(list, "Element 2");
+    list = g_list_append(list, "Element 3");
+    list = g_list_append(list, "Delete Me");
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 5);
+
+    list = g_list_remove_all(list, "Delete Me");
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+
+    ck_assert_str_eq(list->data, "Element 1");
+    ck_assert_str_eq(list->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->data, "Element 3");
+
+    g_list_free(list);
+}
+END_TEST
+
+START_TEST(test_glist_copy)
+{
+    GList *list = NULL;
+    list = g_list_append(list, "Element 1");
+    list = g_list_append(list, "Element 2");
+    list = g_list_append(list, "Element 3");
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+
+    GList *new_list = g_list_copy(list);
+    ck_assert_ptr_nonnull(new_list);
+    ck_assert_int_eq(g_list_length(new_list), 3);
+
+    ck_assert_str_eq(new_list->data, "Element 1");
+    ck_assert_str_eq(new_list->next->data, "Element 2");
+    ck_assert_str_eq(new_list->next->next->data, "Element 3");
+
+    ck_assert_ptr_ne(new_list, list);
+    ck_assert_ptr_ne(new_list->next, list->next);
+    ck_assert_ptr_ne(new_list->next->next, list->next->next);
+
+    g_list_free(list);
+    g_list_free(new_list);
+}
+END_TEST
+
+START_TEST(test_glist_reverse)
+{
+    GList *list = NULL;
+    list = g_list_append(list, "Element 1");
+    list = g_list_append(list, "Element 2");
+    list = g_list_append(list, "Element 3");
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+
+    ck_assert_str_eq(list->data, "Element 1");
+    ck_assert_str_eq(list->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->data, "Element 3");
+
+    list = g_list_reverse(list);
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+
+    ck_assert_str_eq(list->data, "Element 3");
+    ck_assert_str_eq(list->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->data, "Element 1");
+
+    g_list_free(list);
+}
+END_TEST
+
+START_TEST(test_glist_concat)
+{
+    GList *list1 = NULL;
+    list1 = g_list_append(list1, "Element 1");
+    list1 = g_list_append(list1, "Element 2");
+    list1 = g_list_append(list1, "Element 3");
+
+    ck_assert_ptr_nonnull(list1);
+    ck_assert_int_eq(g_list_length(list1), 3);
+
+    GList *list2 = NULL;
+    list2 = g_list_append(list2, "List 2 Element 1");
+    list2 = g_list_append(list2, "List 2 Element 2");
+
+    ck_assert_ptr_nonnull(list2);
+    ck_assert_int_eq(g_list_length(list2), 2);
+
+    list1 = g_list_concat(list1, list2);
+
+    ck_assert_str_eq(list1->data, "Element 1");
+    ck_assert_str_eq(list1->next->data, "Element 2");
+    ck_assert_str_eq(list1->next->next->data, "Element 3");
+    ck_assert_str_eq(list1->next->next->next->data, "List 2 Element 1");
+    ck_assert_str_eq(list1->next->next->next->next->data, "List 2 Element 2");
+
+    g_list_free(list1);
+}
+END_TEST
+
 Suite* glist_suite(void)
 {
     Suite *s;
@@ -257,12 +337,15 @@ Suite* glist_suite(void)
 
     tcase_add_test(tc_core, test_glist_append);
     tcase_add_test(tc_core, test_glist_prepend);
-    tcase_add_test(tc_core, test_glist_reverse);
     tcase_add_test(tc_core, test_glist_insert);
     tcase_add_test(tc_core, test_glist_insert_before);
     tcase_add_test(tc_core, test_glist_remove);
     tcase_add_test(tc_core, test_glist_remove_link);
     tcase_add_test(tc_core, test_glist_delete_link);
+    tcase_add_test(tc_core, test_glist_remove_all);
+    tcase_add_test(tc_core, test_glist_copy);
+    tcase_add_test(tc_core, test_glist_concat);
+    tcase_add_test(tc_core, test_glist_reverse);
 
     suite_add_tcase(s, tc_core);
 
