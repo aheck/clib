@@ -15,12 +15,21 @@ uint32_t fake_int_hash_0(void *v)
     return 0;
 }
 
+int keys_freed = 0;
+void* last_freed_key = NULL;
+int values_freed = 0;
+void* last_freed_value = NULL;
+
 void free_key_dummy(void *data)
 {
+    keys_freed++;
+    last_freed_key = data;
 }
 
 void free_value_dummy(void *data)
 {
+    values_freed++;
+    last_freed_value = data;
 }
 
 START_TEST(test_ghashtable_new)
@@ -133,6 +142,68 @@ START_TEST(test_ghashtable_insert_lookup)
 
     result = g_hash_table_lookup(htable, (void*) 56);
     ck_assert_str_eq(result, "Fifty Six");
+
+    g_hash_table_destroy(htable);
+}
+END_TEST
+
+uint32_t foreach_num_values = 3;
+
+struct KeyValuePair {
+    char *key;
+    char *value;
+    bool seen;
+};
+
+#define FOREACH_NUM_VALUES 3
+
+void test_foreach(void *key, void *value, void *user_data)
+{
+    static bool first = true;
+    struct KeyValuePair expected_values[FOREACH_NUM_VALUES];
+
+    if (first) {
+        expected_values[0].key = (void*) 56;
+        expected_values[0].value = (void*) "Fifty Six";
+        expected_values[0].seen = false;
+
+        expected_values[1].key = (void*) 67;
+        expected_values[1].value = (void*) "Sixty Seven";
+        expected_values[1].seen = false;
+
+        expected_values[2].key = (void*) 23;
+        expected_values[2].value = (void*) "Twenty Three";
+        expected_values[2].seen = false;
+
+        first = false;
+    }
+
+    ck_assert_str_eq("USER DATA", user_data);
+    for (int i = 0; i < FOREACH_NUM_VALUES; i++) {
+        if (key != expected_values[i].key) {
+            continue;
+        }
+
+        ck_assert_str_eq(value, expected_values[i].value);
+        ck_assert_int_eq(expected_values[i].seen, false);
+        expected_values[i].seen = true;
+        foreach_num_values--;
+    }
+}
+
+START_TEST(test_ghashtable_foreach)
+{
+    GHashTable *htable = NULL;
+    htable = g_hash_table_new(g_int_hash, g_int_equal);
+
+    g_hash_table_insert(htable, (void*) 56, (void*) "Fifty Six");
+    g_hash_table_insert(htable, (void*) 67, (void*) "Sixty Seven");
+    g_hash_table_insert(htable, (void*) 23, (void*) "Twenty Three");
+
+    char *user_data = "USER DATA";
+    ck_assert_int_eq(foreach_num_values, 3);
+    g_hash_table_foreach(htable, test_foreach, user_data);
+    ck_assert_int_eq(foreach_num_values, 0);
 
     g_hash_table_destroy(htable);
 }
@@ -266,6 +337,44 @@ START_TEST(test_ghashtable_resize)
 }
 END_TEST
 
+START_TEST(test_ghashtable_free_keys_and_values)
+{
+    GHashTable *htable = NULL;
+    htable = g_hash_table_new_full(g_int_hash, g_int_equal, free_key_dummy, free_value_dummy);
+
+    char *value_one   = "One";
+    char *value_two   = "Two";
+    char *value_three = "Three";
+
+    g_hash_table_insert(htable, (void*) 1, value_one);
+    g_hash_table_insert(htable, (void*) 2, value_two);
+    g_hash_table_insert(htable, (void*) 3, value_three);
+
+    keys_freed = 0;
+    values_freed = 0;
+
+    g_hash_table_remove(htable, (void*) 2);
+
+    ck_assert_int_eq(keys_freed, 1);
+    ck_assert_int_eq(values_freed, 1);
+    ck_assert_ptr_eq(last_freed_key, (void*) 2);
+    ck_assert_ptr_eq(last_freed_value, (void*) value_two);
+
+    g_hash_table_destroy(htable);
+
+    ck_assert_int_eq(keys_freed, 3);
+    ck_assert_int_eq(values_freed, 3);
+
+    if (last_freed_key == (void*) 1) {
+        ck_assert_ptr_eq(last_freed_value, value_one);
+    } else if (last_freed_key == (void*) 3) {
+        ck_assert_ptr_eq(last_freed_value, value_three);
+    } else {
+        ck_abort_msg("Unexpected value for last_freed_value");
+    }
+}
+END_TEST
+
 Suite* ghashtable_suite(void)
 {
     Suite *s;
@@ -280,11 +389,13 @@ Suite* ghashtable_suite(void)
     tcase_add_test(tc_core, test_ghashtable_new_full);
     tcase_add_test(tc_core, test_ghashtable_find_free_slot);
     tcase_add_test(tc_core, test_ghashtable_insert_lookup);
+    tcase_add_test(tc_core, test_ghashtable_foreach);
     tcase_add_test(tc_core, test_ghashtable_remove);
     tcase_add_test(tc_core, test_ghashtable_lookup_after_remove);
     tcase_add_test(tc_core, test_ghashtable_insert_after_remove);
     tcase_add_test(tc_core, test_ghashtable_double_insert);
     tcase_add_test(tc_core, test_ghashtable_resize);
+    tcase_add_test(tc_core, test_ghashtable_free_keys_and_values);
 
     suite_add_tcase(s, tc_core);
 

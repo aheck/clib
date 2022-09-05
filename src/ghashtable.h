@@ -331,6 +331,22 @@ bool g_hash_table_remove(GHashTable *hash_table, void *key)
 void g_hash_table_destroy(GHashTable *hash_table)
 {
     if (hash_table) {
+        if (hash_table->key_destroy_func || hash_table->value_destroy_func) {
+            for (uint32_t i = 0; i < hash_table->num_slots; i++) {
+                if (hash_table->slots[i].used == false) {
+                    continue;
+                }
+
+                if (hash_table->key_destroy_func) {
+                    hash_table->key_destroy_func(hash_table->slots[i].key);
+                }
+
+                if (hash_table->value_destroy_func) {
+                    hash_table->value_destroy_func(hash_table->slots[i].value);
+                }
+            }
+        }
+
         if (hash_table->slots) {
             free(hash_table->slots);
         }

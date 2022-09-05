@@ -428,7 +428,7 @@ GList* g_list_find(GList *list, const void *data)
 GList* g_list_find_custom(GList *list, const void *data, GCompareFunc func)
 {
     while (list) {
-        if (func(list->data, data)) {
+        if (func(list->data, data) == 0) {
             return list;
         }
 
