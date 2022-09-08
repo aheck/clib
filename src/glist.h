@@ -23,7 +23,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <math.h>
+
 typedef int32_t(*GCompareFunc) (const void *a, const void *b);
+typedef int32_t(*GCompareDataFunc) (const void *a, const void *b, void *user_data);
 typedef void(*GFunc) (void *data, void *user_data);
 
 typedef struct GList {
@@ -115,6 +118,55 @@ GList* g_list_insert_before(GList *list, GList *sibling, void *data)
     new_elem->next = sibling;
 
     sibling->prev = new_elem;
+
+    return list;
+}
+
+GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func)
+{
+    if (list == NULL) {
+        return g_list_append(list, data);
+    }
+
+    GList *cur = list;
+    while (cur) {
+        int32_t comp = func(cur->data, data);
+
+        if (comp >= 0) {
+            GList * new_elem = g_list_alloc();
+            if (new_elem == NULL) {
+                return list;
+            }
+
+            new_elem->data = data;
+            new_elem->next = cur;
+            new_elem->prev = cur->prev;
+            if (cur->prev) {
+                cur->prev->next = new_elem;
+            } else {
+                list = new_elem;
+            }
+            cur->prev = new_elem;
+
+            return list;
+        }
+
+        if (cur->next == NULL) {
+            GList * new_elem = g_list_alloc();
+            if (new_elem == NULL) {
+                return list;
+            }
+
+            new_elem->data = data;
+            new_elem->next = NULL;
+            new_elem->prev = cur;
+            cur->next = new_elem;
+
+            return list;
+        }
+
+        cur = cur->next;
+    }
 
     return list;
 }
@@ -321,6 +373,155 @@ GList* g_list_reverse(GList *list)
     }
 
     return list;
+}
+
+GList* _g_list_merge_sorted(GList *list1, GList *list2, GCompareFunc compare_func)
+{
+    GList *new_list;
+
+    if (list1 == list2) {
+        return list1;
+    }
+
+    if (list1 == NULL) {
+        return list2;
+    }
+
+    if (list2 == NULL) {
+        return list1;
+    }
+
+    GList *new_cur = NULL;
+
+    // add first element to new list
+    if (compare_func(list1->data, list2->data) < 0) {
+        new_list = list1;
+        list1 = list1->next;
+    } else {
+        new_list = list2;
+        list2 = list2->next;
+    }
+
+    new_cur = new_list;
+    int32_t comp;
+
+    while (list1 || list2) {
+        if (list1 == NULL) {
+            comp = 1;
+        } else if (list2 == NULL) {
+            comp = -1;
+        } else {
+            comp = compare_func(list1->data, list2->data);
+        }
+
+        if (comp < 0) {
+            new_cur->next = list1;
+            list1->prev = new_cur;
+            new_cur = list1;
+            list1 = list1->next;
+            new_cur->next = NULL;
+        } else {
+            new_cur->next = list2;
+            list2->prev = new_cur;
+            new_cur = list2;
+            list2 = list2->next;
+            new_cur->next = NULL;
+        }
+    }
+
+    return new_list;
+}
+
+GList* g_list_sort(GList *list, GCompareFunc compare_func)
+{
+    // Bottom-Up Mergesort
+
+    if (list == NULL) {
+        return NULL;
+    }
+
+    if (compare_func == NULL) {
+        return list;
+    }
+
+    uint32_t total_len = g_list_length(list);
+
+    if (total_len == 1) {
+        return list;
+    }
+
+    uint32_t max_lists = total_len;
+    max_lists = ceil(max_lists / 2.0);
+
+    if (max_lists % 2 != 0) {
+        max_lists += 1;
+    }
+
+    uint32_t buf_size = sizeof(GList*) * max_lists;
+    GList **sorted_lists = (GList**) malloc(buf_size);
+
+    if (sorted_lists == NULL) {
+        return list;
+    }
+
+    // Set last element to NULL to "normalize" lists with an uneven number of
+    // elements
+    sorted_lists[max_lists - 1] = NULL;
+
+    // Break list into single element lists and merge them pair-wise.
+    // The pointers to the merged lists are stored in sorted_lists.
+    GList *cur = list;
+    uint32_t i;
+    for (i = 0; cur; i++) {
+        GList *list1 = cur;
+        GList *list2 = cur->next;
+
+        if (list2) {
+            cur = list2->next;
+        } else {
+            cur = NULL;
+        }
+
+        list1->prev = NULL;
+        list1->next = NULL;
+        if (list2) {
+            list2->prev = NULL;
+            list2->next = NULL;
+        }
+
+        sorted_lists[i] = _g_list_merge_sorted(list1, list2, compare_func);
+    }
+
+    uint32_t num_sublists = max_lists;
+    while (num_sublists > 1) {
+        uint32_t j = 0;
+        for (i = 0; i < num_sublists; i += 2, j++) {
+            GList *list1 = sorted_lists[i];
+            GList *list2 = sorted_lists[i + 1];
+            sorted_lists[j] = _g_list_merge_sorted(list1, list2, compare_func);
+        }
+        num_sublists = j;
+
+        if (num_sublists > 1 && num_sublists % 2 != 0) {
+            num_sublists += 1;
+            sorted_lists[num_sublists - 1] = NULL;
+        }
+    }
+
+    GList *result = sorted_lists[0];
+    free(sorted_lists);
+
+    return result;
+}
+
+GList* g_list_insert_sorted_with_data(GList *list, void *data, GCompareDataFunc func, void *user_data)
+{
+    return NULL;
+}
+
+GList* g_list_sort_with_data(GList *list, GCompareDataFunc compare_func, void *user_data)
+{
+    return NULL;
 }
 
 GList* g_list_concat(GList *list1, GList *list2)
