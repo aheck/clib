@@ -38,17 +38,48 @@
 #define TRUE  true
 #define FALSE false
 
-#define BUFSIZE (sizeof(long) * 8 + 1)
+typedef struct GString {
+    char *str;
+    size_t len;
+    size_t allocated_len;
+} GString;
 
-char *ltoa(long N, char *str, int base)
+GString* g_string_new(const char *init);
+GString* g_string_new_len(const char *init, size_t len);
+GString* g_string_sized_new(ssize_t dfl_size);
+GString* g_string_assign(GString *string, const char *rval);
+GString* g_string_append(GString *string, const char *val);
+GString* g_string_append_c(GString *string, char c);
+GString* g_string_append_len(GString *string, const char *val, ssize_t len);
+GString* g_string_prepend(GString *string, const char *val);
+GString* g_string_prepend_c(GString *string, char c);
+GString* g_string_prepend_len(GString *string, const char *val, ssize_t len);
+GString* g_string_insert(GString *string, ssize_t pos, const char *val);
+GString* g_string_insert_c(GString *string, ssize_t pos, char c);
+GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssize_t len);
+GString* g_string_erase(GString *string, ssize_t pos, ssize_t len);
+GString* g_string_truncate(GString *string, size_t len);
+void g_string_vprintf(GString *string, const char *format, va_list args);
+void g_string_append_vprintf(GString *string, const char *format, va_list args);
+void g_string_printf(GString *string, const char *format, ...);
+void g_string_append_printf(GString *string, const char *format, ...);
+bool g_string_equal(GString *v, GString *v2);
+char* g_string_free(GString *string, bool free_segment);
+
+
+#ifdef _CLIB_IMPL
+
+#define _GSTRING_BUFSIZE (sizeof(long) * 8 + 1)
+
+char* _gstring_ltoa(long N, char *str, int base)
 {
       register int i = 2;
       long uarg;
-      char *tail, *head = str, buf[BUFSIZE];
+      char *tail, *head = str, buf[_GSTRING_BUFSIZE];
 
       if (36 < base || 2 > base)
             base = 10;                    /* can only use 0-9, A-Z        */
-      tail = &buf[BUFSIZE - 1];           /* last character position      */
+      tail = &buf[_GSTRING_BUFSIZE - 1];           /* last character position      */
       *tail-- = '\0';
 
       if (10 == base && N < 0L)
@@ -75,12 +106,6 @@ char *ltoa(long N, char *str, int base)
       memcpy(head, ++tail, i);
       return str;
 }
-
-typedef struct GString {
-    char *str;
-    size_t len;
-    size_t allocated_len;
-} GString;
 
 GString* g_string_new(const char *init)
 {
@@ -494,8 +519,6 @@ GString* g_string_truncate(GString *string, size_t len)
     return string;
 }
 
-void g_string_append_vprintf(GString *string, const char *format, va_list args);
-
 void g_string_vprintf(GString *string, const char *format, va_list args)
 {
     g_string_truncate(string, 0);
@@ -524,7 +547,7 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
                 g_string_append(string, va_arg(args, char*));
             } else if (*c == 'd') {
                 int_arg = va_arg(args, int);
-                ltoa(int_arg, (char*) &buf, 10);
+                _gstring_ltoa(int_arg, (char*) &buf, 10);
                 g_string_append(string, buf);
             } else if (*c == 'f') {
                 double_arg = va_arg(args, double);
@@ -532,7 +555,7 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
                 g_string_append(string, buf);
             } else if (*c == 'x' || *c == 'X') {
                 int_arg = va_arg(args, int);
-                ltoa(int_arg, (char*) &buf, 16);
+                _gstring_ltoa(int_arg, (char*) &buf, 16);
                 if (*c == 'x') {
                     for (cur = (char*) &buf; *cur; cur++) {
                         *cur = tolower(*cur);
@@ -594,4 +617,5 @@ char* g_string_free(GString *string, bool free_segment)
     return segment;
 }
 
+#endif
 #endif

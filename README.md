@@ -21,6 +21,22 @@ Pick the header files of the classes you want to use from *src/*, copy them to
 a location in your project where header files are found by the compiler, and
 include them in your C project files.
 
+When you include a class for the first time in a compilation unit you need to
+define *_CLIB_IMPL* to tell the preprocessor that you want the declarations
+AND the implementations of the functions:
+
+```c
+#define _CLIB_IMPL 1
+#include <gstring.h>
+```
+
+Whenever you use the same library again in the same compilation unit you only
+need to include the header file:
+
+```c
+#include <gstring.h>
+```
+
 ## Building the Tests
 
 Since this library is header-only the only purpose of the build system is to

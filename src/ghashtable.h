@@ -39,6 +39,43 @@ typedef void (*GDestroyNotify)(void *data);
 typedef void (*GHFunc) (void *key, void *value, void *user_data);
 typedef bool (*GHRFunc) (void *key, void *value, void *user_data);
 
+struct GHashTableSlot {
+    void *key;
+    void *value;
+    bool used : 1;
+    bool deleted : 1;
+};
+
+typedef struct GHashTable {
+    uint32_t num_slots;
+    uint32_t num_used;
+    uint32_t resize_threshold;
+    GHashFunc hash_func;
+    GEqualFunc key_equal_func;
+    GDestroyNotify key_destroy_func;
+    GDestroyNotify value_destroy_func;
+    struct GHashTableSlot *slots;
+} GHashTable;
+
+uint32_t g_int_hash(void *v);
+bool g_int_equal(void *v1, void *v2);
+uint32_t g_str_hash(void *v);
+bool g_str_equal(void *v1, void *v2);
+GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func);
+GHashTable *g_hash_table_new_full(GHashFunc hash_func, GEqualFunc key_equal_func, GDestroyNotify key_destroy_func, GDestroyNotify value_destroy_func);
+uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slot, void *key);
+uint32_t _g_hash_table_calc_start_slot(GHashTable *hash_table, void *key);
+uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint32_t start_slot, bool *ret_found);
+void g_hash_table_insert(GHashTable *hash_table, void *key, void *value);
+uint32_t g_hash_table_size(GHashTable *hash_table);
+void* g_hash_table_lookup(GHashTable *hash_table, void *key);
+void g_hash_table_foreach(GHashTable *hash_table, GHFunc func, void *user_data);
+bool g_hash_table_remove(GHashTable *hash_table, void *key);
+void g_hash_table_destroy(GHashTable *hash_table);
+
+
+#ifdef _CLIB_IMPL
+
 uint32_t g_int_hash(void *v)
 {
     uint32_t x = (uint32_t) (uint64_t) v; // cast to uint64_t to omit warning
@@ -73,26 +110,6 @@ bool g_str_equal(void *v1, void *v2)
 {
     return strcmp((char*) v1, (char*) v2) == 0;
 }
-
-struct GHashTableSlot {
-    void *key;
-    void *value;
-    bool used : 1;
-    bool deleted : 1;
-};
-
-typedef struct GHashTable {
-    uint32_t num_slots;
-    uint32_t num_used;
-    uint32_t resize_threshold;
-    GHashFunc hash_func;
-    GEqualFunc key_equal_func;
-    GDestroyNotify key_destroy_func;
-    GDestroyNotify value_destroy_func;
-    struct GHashTableSlot *slots;
-} GHashTable;
-
-void g_hash_table_insert(GHashTable *hash_table, void *key, void *value);
 
 GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
 {
@@ -354,4 +371,5 @@ void g_hash_table_destroy(GHashTable *hash_table)
     }
 }
 
+#endif
 #endif

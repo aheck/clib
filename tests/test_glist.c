@@ -3,6 +3,7 @@
 
 #include <check.h>
 
+#define _CLIB_IMPL 1
 #include "glist.h"
 
 int32_t simple_comp_func(const void *a, const void *b)

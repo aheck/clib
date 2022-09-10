@@ -4,6 +4,7 @@
 
 #include <check.h>
 
+#define _CLIB_IMPL 1
 #include "ghashtable.h"
 
 // Fake hash function for testing

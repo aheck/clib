@@ -23,6 +23,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef _GLIST_H
+#define _GLIST_H
 #include <math.h>
 
 typedef int32_t(*GCompareFunc) (const void *a, const void *b);
@@ -35,11 +37,38 @@ typedef struct GList {
     struct GList *prev;
 } GList;
 
+GList* g_list_append(GList *list, void *data);
+GList* g_list_prepend(GList *list, void *data);
+GList* g_list_insert(GList *list, void *data, int32_t position);
 GList* g_list_insert_before(GList *list, GList *sibling, void *data);
+GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func);
+GList* g_list_remove(GList *list, const void *data);
+GList* g_list_remove_link(GList *list, GList *llink);
+GList* g_list_delete_link(GList *list, GList *link_);
+GList* g_list_remove_all(GList *list, const void *data);
+void g_list_free(GList *list);
+GList* g_list_alloc();
+void g_list_free_1(GList *list);
+uint32_t g_list_length(GList *list);
+GList* g_list_copy(GList *list);
+GList* g_list_reverse(GList *list);
+GList* g_list_sort(GList *list, GCompareFunc compare_func);
+GList* g_list_insert_sorted_with_data(GList *list, void *data, GCompareDataFunc func, void *user_data);
+GList* g_list_sort_with_data(GList *list, GCompareDataFunc compare_func, void *user_data);
+GList* g_list_concat(GList *list1, GList *list2);
+void g_list_foreach(GList *list, GFunc func, void *user_data);
 GList* g_list_first(GList *list);
 GList* g_list_last(GList *list);
-GList* g_list_alloc();
 GList* g_list_nth(GList *list, uint32_t n);
+void* g_list_nth_data(GList *list, uint32_t n);
+GList* g_list_nth_prev(GList *list, uint32_t n);
+GList* g_list_find(GList *list, const void *data);
+GList* g_list_find_custom(GList *list, const void *data, GCompareFunc func);
+int32_t g_list_position(GList *list, GList *llink);
+int32_t g_list_index(GList *list, const void *data);
+
+
+#ifdef _CLIB_IMPL
 
 GList* g_list_append(GList *list, void *data)
 {
@@ -694,3 +723,6 @@ int32_t g_list_index(GList *list, const void *data)
 
     return -1;
 }
+
+#endif
+#endif
