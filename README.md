@@ -1,6 +1,6 @@
-# Clib
+# CLib
 
-Clib is a header-only library for C that implements the most important classes
+CLib is a header-only library for C that implements the most important classes
 from Glib: **GList**, **GHashTable** and **GString**.
 
 Glib is a great library that provides some classes that are so useful that you
