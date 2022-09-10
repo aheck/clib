@@ -49,9 +49,10 @@ sanitizer:
 |:---:|:---|:---:|
 | ENABLE_ADDRESS_SANITIZER | Build with address sanitizer | OFF |
 | ENABLE_MEMORY_SANITIZER | Build with memory sanitizer | OFF |
+| ENABLE_LEAK_SANITIZER | Build with leak sanitizer | OFF |
 
-Address sanitizer and memory sanitzier are not compatible with each other so you
-can only use one of both for any build.
+Sanitizers cost performance and some are incompatible with each other so can only
+use one sanitizer for any build.
 
 For most development purposes it is best to create a debug build and enable
 address sanitizer:
