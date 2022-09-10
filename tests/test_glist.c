@@ -74,15 +74,36 @@ END_TEST
 START_TEST(test_glist_insert)
 {
     GList *list = NULL;
-    list = g_list_append(list, "Element 1");
-    list = g_list_append(list, "Element 2");
-    list = g_list_append(list, "Element 3");
+
+    // test insert on empty list and with position that is way too large
+    list = g_list_insert(list, "Element 1", 0);
+    ck_assert_ptr_nonnull(list);
+    ck_assert_ptr_null(list->prev);
+    ck_assert_ptr_null(list->next);
+    ck_assert_int_eq(g_list_length(list), 1);
+    ck_assert_str_eq(list->data, "Element 1");
+
+    list = g_list_insert(list, "Element 2", 1);
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 2);
+    ck_assert_str_eq(list->data, "Element 1");
+    ck_assert_str_eq(list->next->data, "Element 2");
+
+    list = g_list_insert(list, "Element 3", 120);
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+    ck_assert_str_eq(list->data, "Element 1");
+    ck_assert_str_eq(list->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->data, "Element 3");
 
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 3);
 
+    // test insert in the middle of a list
     g_list_insert(list, "New Element", 1);
 
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 4);
     ck_assert_str_eq(list->data, "Element 1");
     ck_assert_str_eq(list->next->data, "New Element");
     ck_assert_str_eq(list->next->next->data, "Element 2");
@@ -105,7 +126,7 @@ END_TEST
 START_TEST(test_glist_insert_before)
 {
     GList *list = NULL;
-    list = g_list_append(list, "Element 1");
+    list = g_list_insert_before(list, NULL, "Element 1");
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
 
@@ -136,9 +157,15 @@ END_TEST
 START_TEST(test_glist_insert_sorted)
 {
     GList *list = NULL;
-    list = g_list_append(list, (void*) 1);
-    list = g_list_append(list, (void*) 4);
-    list = g_list_append(list, (void*) 9);
+    list = g_list_insert_sorted(list, (void*) 1, simple_comp_func);
+    list = g_list_insert_sorted(list, (void*) 4, simple_comp_func);
+    list = g_list_insert_sorted(list, (void*) 9, simple_comp_func);
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->data, 1);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->next->data, 4);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->next->next->data, 9);
 
     list = g_list_insert_sorted(list, (void*) 7, simple_comp_func);
     list = g_list_insert_sorted(list, (void*) 8, simple_comp_func);

@@ -85,14 +85,44 @@ GList* g_list_prepend(GList *list, void *data)
 
 GList* g_list_insert(GList *list, void *data, int32_t position)
 {
+    if (list == NULL) {
+        return g_list_append(list, data);
+    }
+
     if (position < 0) {
         return g_list_append(list, data);
     }
 
-    GList *sibling = g_list_nth(list, position);
-    if (sibling) {
-        return g_list_insert_before(list, sibling, data);
+    GList *last;
+    GList *cur = list;
+    for (int32_t i = 0; cur; last = cur, cur = cur->next, i++) {
+        if (position != i) {
+            continue;
+        }
+
+        GList *new_elem = g_list_alloc();
+        if (new_elem == NULL) {
+            return list;
+        }
+        cur->prev->next = new_elem;
+        new_elem->data = data;
+        new_elem->prev = cur->prev;
+        new_elem->next = cur;
+        cur->prev = new_elem;
+        return list;
     }
+
+    // we reached the end of the list but didn't find position
+    // so we append to the end of the list
+    GList *new_elem = g_list_alloc();
+    if (new_elem == NULL) {
+        return list;
+    }
+
+    last->next = new_elem;
+    new_elem->data = data;
+    new_elem->prev = last;
+    new_elem->next = NULL;
 
     return list;
 }
