@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10)
 project(clib C)
 
 set(C_STANDARD 99)
+set(C_STANDARD_REQUIRED ON)
+add_compile_options(-Wall)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
