@@ -236,6 +236,8 @@ END_TEST
 START_TEST(test_glist_remove_link)
 {
     GList *list = NULL;
+    GList *removed_elem = NULL;
+
     list = g_list_append(list, "Element 1");
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
@@ -243,21 +245,27 @@ START_TEST(test_glist_remove_link)
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 3);
 
-    list = g_list_remove_link(list, list->next);
+    removed_elem = list->next;
+    list = g_list_remove_link(list, removed_elem);
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 2);
+    g_list_free(removed_elem);
 
     ck_assert_str_eq(list->data, "Element 1");
     ck_assert_str_eq(list->next->data, "Element 3");
 
-    list = g_list_remove_link(list, list->next);
+    removed_elem = list->next;
+    list = g_list_remove_link(list, removed_elem);
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 1);
+    g_list_free(removed_elem);
 
     ck_assert_str_eq(list->data, "Element 1");
 
-    list = g_list_remove_link(list, list);
+    removed_elem = list;
+    list = g_list_remove_link(list, removed_elem);
     ck_assert_ptr_null(list);
+    g_list_free(removed_elem);
 
     g_list_free(list);
 }

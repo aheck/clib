@@ -334,6 +334,8 @@ START_TEST(test_ghashtable_resize)
         void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
         ck_assert_ptr_nonnull(result);
     }
+
+    g_hash_table_destroy(htable);
 }
 END_TEST
 

@@ -110,6 +110,7 @@ START_TEST(test_gstring_free)
     result = g_string_free(string, false);
     ck_assert_ptr_nonnull(result);
     ck_assert_str_eq(result, "Hello World");
+    free(result);
 }
 END_TEST
 
