@@ -558,6 +558,8 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
         if (last_c == '%') {
             if (*c == '%') {
                 g_string_append_c(string, '%');
+            } else if (*c == 'c') {
+                g_string_append_c(string, va_arg(args, int));
             } else if (*c == 's') {
                 g_string_append(string, va_arg(args, char*));
             } else if (*c == 'd') {

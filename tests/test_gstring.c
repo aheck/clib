@@ -483,6 +483,23 @@ START_TEST(test_gstring_truncate)
 }
 END_TEST
 
+START_TEST(test_gstring_printf_char)
+{
+    GString *string = NULL;
+    string = g_string_new("");
+
+    g_string_printf(string, "%c", 'A');
+    ck_assert_int_eq(string->len, 1);
+    ck_assert_str_eq(string->str, "A");
+
+    g_string_printf(string, "%c", 'B');
+    ck_assert_int_eq(string->len, 1);
+    ck_assert_str_eq(string->str, "B");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_printf_int)
 {
     GString *string = NULL;
@@ -548,9 +565,9 @@ START_TEST(test_gstring_printf)
     GString *string = NULL;
     string = g_string_new("");
 
-    g_string_printf(string, "String: '%s'; Number: %d; Hex: 0x%x", "STR1", 42, 0xa1);
-    ck_assert_int_eq(string->len, 37);
-    ck_assert_str_eq(string->str, "String: 'STR1'; Number: 42; Hex: 0xa1");
+    g_string_printf(string, "Char: '%c'; String: '%s'; Number: %d; Hex: 0x%x", 'A', "STR1", 42, 0xa1);
+    ck_assert_int_eq(string->len, 48);
+    ck_assert_str_eq(string->str, "Char: 'A'; String: 'STR1'; Number: 42; Hex: 0xa1");
 
     g_string_free(string, true);
 }
@@ -629,6 +646,7 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_insert_len_realloc);
     tcase_add_test(tc_core, test_gstring_erase);
     tcase_add_test(tc_core, test_gstring_truncate);
+    tcase_add_test(tc_core, test_gstring_printf_char);
     tcase_add_test(tc_core, test_gstring_printf_int);
     tcase_add_test(tc_core, test_gstring_printf_hex);
     tcase_add_test(tc_core, test_gstring_printf_string);
