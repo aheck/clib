@@ -595,6 +595,28 @@ START_TEST(test_glist_sort_uneven)
 }
 END_TEST
 
+START_TEST(test_glist_sort_extensive)
+{
+    GList *list = NULL;
+
+    // Reverse a list, prepend a new element, sort it, and check the order of
+    // the elements. Do this 1000 times so that the final list will contain
+    // 1000 elements.
+    for (int i = 0; i < 1000; i++) {
+        list = g_list_reverse(list);
+        list = g_list_prepend(list, (void*) (uint64_t) i);
+        list = g_list_sort(list, simple_comp_func);
+
+        GList *cur = list;
+        for (int j = 0; j <= i; cur = cur->next, j++) {
+            ck_assert_int_eq((uint32_t) (uint64_t) cur->data, j);
+        }
+    }
+
+    g_list_free(list);
+}
+END_TEST
+
 START_TEST(test_glist_insert_sorted_with_data)
 {
 }
@@ -840,6 +862,7 @@ Suite* glist_suite(void)
     tcase_add_test(tc_core, test_glist_sort);
     tcase_add_test(tc_core, test_glist_sort_even);
     tcase_add_test(tc_core, test_glist_sort_uneven);
+    tcase_add_test(tc_core, test_glist_sort_extensive);
     tcase_add_test(tc_core, test_glist_insert_sorted_with_data);
     tcase_add_test(tc_core, test_glist_sort_with_data);
     tcase_add_test(tc_core, test_glist_concat);
