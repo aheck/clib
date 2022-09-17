@@ -69,17 +69,32 @@ char* g_string_free(GString *string, bool free_segment);
 
 #ifdef _CLIB_IMPL
 
-#define _GSTRING_BUFSIZE (sizeof(long) * 8 + 1)
+#define _GSTRING_LTOA_BUF_SIZE (sizeof(long) * 8 + 1)
 
+/*
+**  Converts a long integer to a string.
+**
+**  Copyright 1988-90 by Robert B. Stout dba MicroFirm
+**
+**  Released to public domain, 1991
+**
+**  Parameters: 1 - number to be converted
+**              2 - buffer in which to build the converted string
+**              3 - number base to use for conversion
+**
+**  Returns:  A character pointer to the converted string if
+**            successful, a NULL pointer if the number base specified
+**            is out of range.
+*/
 char* _gstring_ltoa(long N, char *str, int base)
 {
       register int i = 2;
       long uarg;
-      char *tail, *head = str, buf[_GSTRING_BUFSIZE];
+      char *tail, *head = str, buf[_GSTRING_LTOA_BUF_SIZE];
 
       if (36 < base || 2 > base)
             base = 10;                    /* can only use 0-9, A-Z        */
-      tail = &buf[_GSTRING_BUFSIZE - 1];           /* last character position      */
+      tail = &buf[_GSTRING_LTOA_BUF_SIZE - 1];           /* last character position      */
       *tail-- = '\0';
 
       if (10 == base && N < 0L)
