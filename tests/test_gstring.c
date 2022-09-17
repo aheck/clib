@@ -560,6 +560,23 @@ START_TEST(test_gstring_printf_float)
 }
 END_TEST
 
+START_TEST(test_gstring_printf_float_precision)
+{
+    GString *string = NULL;
+    string = g_string_new("");
+
+    g_string_printf(string, "%.2f", 17.38);
+    ck_assert_int_eq(string->len, 5);
+    ck_assert_str_eq(string->str, "17.38");
+
+    g_string_printf(string, "%.2f and %f", 17.38, 17.38);
+    ck_assert_int_eq(string->len, 19);
+    ck_assert_str_eq(string->str, "17.38 and 17.380000");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_printf)
 {
     GString *string = NULL;
@@ -651,6 +668,7 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_printf_hex);
     tcase_add_test(tc_core, test_gstring_printf_string);
     tcase_add_test(tc_core, test_gstring_printf_float);
+    tcase_add_test(tc_core, test_gstring_printf_float_precision);
     tcase_add_test(tc_core, test_gstring_printf);
     tcase_add_test(tc_core, test_gstring_append_printf);
     tcase_add_test(tc_core, test_gstring_equal);

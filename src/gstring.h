@@ -544,10 +544,13 @@ void g_string_vprintf(GString *string, const char *format, va_list args)
 void g_string_append_vprintf(GString *string, const char *format, va_list args)
 {
     const char *c;
-    char last_c = 0;
+    bool format_mode = false;
+    bool precision_mode = false;
+    int precision = -1;
     int int_arg;
     double double_arg;
     char buf[20];
+    char format_buf[20];
     char *cur;
 
     if (format == NULL) {
@@ -555,7 +558,7 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
     }
 
     for (c = format; *c; c++) {
-        if (last_c == '%') {
+        if (format_mode) {
             if (*c == '%') {
                 g_string_append_c(string, '%');
             } else if (*c == 'c') {
@@ -568,7 +571,12 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
                 g_string_append(string, buf);
             } else if (*c == 'f') {
                 double_arg = va_arg(args, double);
-                snprintf(buf, sizeof(buf), "%f", double_arg);
+                if (precision_mode) {
+                    snprintf(format_buf, sizeof(format_buf), "%%.%df", precision);
+                    snprintf(buf, sizeof(buf), format_buf, double_arg);
+                } else {
+                    snprintf(buf, sizeof(buf), "%f", double_arg);
+                }
                 g_string_append(string, buf);
             } else if (*c == 'x' || *c == 'X') {
                 int_arg = va_arg(args, int);
@@ -579,12 +587,21 @@ void g_string_append_vprintf(GString *string, const char *format, va_list args)
                     }
                 }
                 g_string_append(string, buf);
+            } else if (*c == '.') {
+                precision_mode = true;
+                continue;
+            } else if (precision_mode && isdigit(*c)) {
+                precision = *c - '0';
+                continue;
             }
+
+            format_mode = false;
+            precision_mode = false;
         } else if (*c != '%') {
             g_string_append_c(string, *c);
+        } else {
+            format_mode = true;
         }
-
-        last_c = *c;
     }
 }
 
