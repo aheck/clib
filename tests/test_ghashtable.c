@@ -323,15 +323,16 @@ START_TEST(test_ghashtable_resize)
     htable = g_hash_table_new(g_int_hash, g_int_equal);
 
     uint32_t init_num_slots = htable->num_slots;
-    uint32_t tipping_point = ceil(GHASHTABLE_MAX_LOAD * htable->num_slots);
+    uint32_t tipping_point = ceil(GHASHTABLE_MAX_LOAD * htable->num_slots) + 1;
 
-    for (uint32_t i = 0; i <= tipping_point; i++) {
+    for (uint32_t i = 0; i < tipping_point; i++) {
         g_hash_table_insert(htable, (void*) (uint64_t) i, (void*) "Dummy String");
     }
 
     ck_assert_int_eq(htable->num_slots, init_num_slots * 2);
+    ck_assert_int_eq(htable->num_used, tipping_point);
 
-    for (uint32_t i = 0; i <= tipping_point; i++) {
+    for (uint32_t i = 0; i < tipping_point; i++) {
         void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
         ck_assert_ptr_nonnull(result);
     }

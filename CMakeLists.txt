@@ -36,3 +36,4 @@ find_package(Check REQUIRED)
 enable_testing()
 
 add_subdirectory(tests)
+add_subdirectory(perf_tests)

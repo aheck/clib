@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <strings.h>
+#include <stdlib.h>
 
 #define GHASHTABLE_MIN_SLOTS 64
 #define GHASHTABLE_MAX_LOAD 0.5
@@ -244,7 +245,9 @@ bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
     memset(hash_table->slots, 0, buf_size);
 
     for (uint32_t i = 0; i < old_num_slots; i++) {
-        g_hash_table_insert(hash_table, old_slots[i].key, old_slots[i].value);
+        if (old_slots[i].used) {
+            g_hash_table_insert(hash_table, old_slots[i].key, old_slots[i].value);
+        }
     }
 
     free(old_slots);
