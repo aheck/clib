@@ -19,7 +19,7 @@ void measure_insert(uint32_t num_inserts)
     int end_time = clock();
     g_hash_table_destroy(htable);
 
-    printf("Inserting %d elements: %fs\n", num_inserts, CALC_SECONDS(start_time, end_time));
+    printf("Inserting %-7d elements: %fs\n", num_inserts, CALC_SECONDS(start_time, end_time));
 }
 
 void measure_lookup(uint32_t num_lookups)
@@ -39,7 +39,7 @@ void measure_lookup(uint32_t num_lookups)
     int end_time = clock();
     g_hash_table_destroy(htable);
 
-    printf("Looking up %d elements: %fs\n", num_lookups, CALC_SECONDS(start_time, end_time));
+    printf("Looking up %-7d elements: %fs\n", num_lookups, CALC_SECONDS(start_time, end_time));
 }
 
 void perf_test_insert()
@@ -58,12 +58,12 @@ void perf_test_lookup()
 {
     printf("= perf_test_lookup =\n\n");
 
-    measure_insert(10);
-    measure_insert(100);
-    measure_insert(1000);
-    measure_insert(10000);
-    measure_insert(100000);
-    measure_insert(1000000);
+    measure_lookup(10);
+    measure_lookup(100);
+    measure_lookup(1000);
+    measure_lookup(10000);
+    measure_lookup(100000);
+    measure_lookup(1000000);
 }
 
 int main(int argc, char **argv)
