@@ -28,7 +28,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <strings.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define GHASHTABLE_MIN_SLOTS 64

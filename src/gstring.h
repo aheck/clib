@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <strings.h>
+#include <string.h>
 #include <ctype.h>
 
 #define GSTRING_MIN_BUF_SIZE 32
