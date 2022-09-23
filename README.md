@@ -42,20 +42,29 @@ need to include the header file:
 Since this library is header-only the only purpose of the build system is to
 build the tests.
 
-The tests can be built with the following commands:
+The tests can be built with the following commands on Linux and macOS:
 
 ```bash
-cmake .
-make
+mkdir build
+cd build
+conan install ..
+cmake --build . --config Debug
 ```
 
-By default the build system creates debug binaries.
+And on Windows with Visual Studio 2022:
+
+```
+md build
+cd build
+conan install ..
+cmake .. -G "Visual Studio 17"
+cmake --build . --config Debug
+```
 
 You can create a release build with:
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Release .
-make
+cmake --build . --config Release
 ```
 
 When creating a debug build you can also use the following options to enable a
@@ -74,6 +83,5 @@ For most development purposes it is best to create a debug build and enable
 address sanitizer:
 
 ```bash
-cmake -DENABLE_ADDRESS_SANITIZER=ON .
-make
+cmake --build . --config Debug -DENABLE_ADDRESS_SANITIZER=ON
 ```

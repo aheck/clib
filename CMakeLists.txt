@@ -6,6 +6,9 @@ set(C_STANDARD 99)
 set(C_STANDARD_REQUIRED ON)
 add_compile_options(-Wall)
 
+message(STATUS "Binary dir: ${CMAKE_BINARY_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
@@ -29,8 +32,6 @@ elseif(ENABLE_LEAK_SANITIZER)
 else()
     message(STATUS "Building with no sanitizer")
 endif()
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(Check REQUIRED)
 enable_testing()
