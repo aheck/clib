@@ -47,21 +47,29 @@ The tests can be built with the following commands on Linux and macOS:
 ```bash
 mkdir build
 cd build
-conan install ..
-cmake --build . --config Debug
+conan install .. --build=missing
+cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug
+make
 ```
 
 And on Windows with Visual Studio 2022:
 
-```
+```bash
 md build
 cd build
-conan install ..
+conan install .. --build=missing
 cmake .. -G "Visual Studio 17"
 cmake --build . --config Debug
 ```
 
-You can create a release build with:
+You can create a release build an Linux and macOS with:
+
+```bash
+cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+make
+```
+
+And on Windows with:
 
 ```bash
 cmake --build . --config Release
@@ -83,5 +91,5 @@ For most development purposes it is best to create a debug build and enable
 address sanitizer:
 
 ```bash
-cmake --build . --config Debug -DENABLE_ADDRESS_SANITIZER=ON
+cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DENABLE_ADDRESS_SANITIZER=ON
 ```
