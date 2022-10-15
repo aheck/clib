@@ -33,7 +33,7 @@ else()
     message(STATUS "Building with no sanitizer")
 endif()
 
-find_package(Check REQUIRED)
+find_package(check REQUIRED)
 enable_testing()
 
 add_subdirectory(tests)
