@@ -845,6 +845,7 @@ Suite* glist_suite(void)
 
     /* Core test case */
     tc_core = tcase_create("Core");
+    tcase_set_timeout(tc_core, 10);
 
     tcase_add_test(tc_core, test_glist_append);
     tcase_add_test(tc_core, test_glist_prepend);
