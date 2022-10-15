@@ -36,6 +36,9 @@ jobs:
     - name: Install dependencies
       run: pip3 install conan
 
+    - name: Create build directory
+      run: mkdir build
+
     - name: Install Conan dependencies
       working-directory: ./build
       run: conan install .
