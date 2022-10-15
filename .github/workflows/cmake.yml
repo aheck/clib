@@ -41,7 +41,7 @@ jobs:
 
     - name: Install Conan dependencies
       working-directory: ./build
-      run: conan install .
+      run: conan install ..
 
     - name: Configure CMake
       working-directory: ./build
