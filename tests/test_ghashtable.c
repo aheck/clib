@@ -33,6 +33,12 @@ void free_value_dummy(void *data)
     last_freed_value = data;
 }
 
+START_TEST(test_gint_hash)
+{
+    ck_assert_int_eq(g_int_hash((void*) 56), 1332371660);
+}
+END_TEST
+
 START_TEST(test_ghashtable_new)
 {
     GHashTable *htable = NULL;
@@ -389,6 +395,7 @@ Suite* ghashtable_suite(void)
     /* Core test case */
     tc_core = tcase_create("Core");
 
+    tcase_add_test(tc_core, test_gint_hash);
     tcase_add_test(tc_core, test_ghashtable_new);
     tcase_add_test(tc_core, test_ghashtable_new_full);
     tcase_add_test(tc_core, test_ghashtable_find_free_slot);
