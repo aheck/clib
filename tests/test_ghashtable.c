@@ -75,6 +75,17 @@ START_TEST(test_ghashtable_new_full)
 }
 END_TEST
 
+START_TEST(test_ghashtable_calc_start_slot)
+{
+    GHashTable *htable = NULL;
+
+    htable = g_hash_table_new(g_int_hash, g_int_equal);
+    ck_assert_int_eq(_g_hash_table_calc_start_slot(htable, (void*) 56), 12);
+
+    g_hash_table_destroy(htable);
+}
+END_TEST
+
 START_TEST(test_ghashtable_find_free_slot)
 {
     GHashTable *htable = NULL;
@@ -398,6 +409,7 @@ Suite* ghashtable_suite(void)
     tcase_add_test(tc_core, test_gint_hash);
     tcase_add_test(tc_core, test_ghashtable_new);
     tcase_add_test(tc_core, test_ghashtable_new_full);
+    tcase_add_test(tc_core, test_ghashtable_calc_start_slot);
     tcase_add_test(tc_core, test_ghashtable_find_free_slot);
     tcase_add_test(tc_core, test_ghashtable_insert_lookup);
     tcase_add_test(tc_core, test_ghashtable_foreach);
