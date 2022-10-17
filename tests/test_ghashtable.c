@@ -81,6 +81,8 @@ START_TEST(test_ghashtable_calc_start_slot)
 
     htable = g_hash_table_new(g_int_hash, g_int_equal);
     ck_assert_int_eq(_g_hash_table_calc_start_slot(htable, (void*) 56), 12);
+    ck_assert_int_eq(_g_hash_table_calc_start_slot(htable, (void*) 67), 49);
+    ck_assert_int_eq(_g_hash_table_calc_start_slot(htable, (void*) 23), 49);
 
     g_hash_table_destroy(htable);
 }
