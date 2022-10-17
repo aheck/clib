@@ -207,27 +207,31 @@ END_TEST
 START_TEST(test_glist_remove)
 {
     GList *list = NULL;
-    list = g_list_append(list, "Element 1");
-    list = g_list_append(list, "Element 2");
-    list = g_list_append(list, "Element 3");
+    char *element1 = "Element 1";
+    char *element2 = "Element 2";
+    char *element3 = "Element 3";
+
+    list = g_list_append(list, element1);
+    list = g_list_append(list, element2);
+    list = g_list_append(list, element3);
 
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 3);
 
-    list = g_list_remove(list, "Element 2");
+    list = g_list_remove(list, element2);
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 2);
 
-    ck_assert_str_eq(list->data, "Element 1");
-    ck_assert_str_eq(list->next->data, "Element 3");
+    ck_assert_str_eq(list->data, element1);
+    ck_assert_str_eq(list->next->data, element3);
 
-    list = g_list_remove(list, "Element 3");
+    list = g_list_remove(list, element3);
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 1);
 
-    ck_assert_str_eq(list->data, "Element 1");
+    ck_assert_str_eq(list->data, element1);
 
-    list = g_list_remove(list, "Element 1");
+    list = g_list_remove(list, element1);
     ck_assert_ptr_null(list);
 
     g_list_free(list);
@@ -305,16 +309,18 @@ END_TEST
 START_TEST(test_glist_remove_all)
 {
     GList *list = NULL;
+    char *delete_me = "Delete Me";
+
     list = g_list_append(list, "Element 1");
-    list = g_list_append(list, "Delete Me");
+    list = g_list_append(list, delete_me);
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
-    list = g_list_append(list, "Delete Me");
+    list = g_list_append(list, delete_me);
 
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 5);
 
-    list = g_list_remove_all(list, "Delete Me");
+    list = g_list_remove_all(list, delete_me);
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 3);
 
