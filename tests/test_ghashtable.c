@@ -170,8 +170,8 @@ END_TEST
 uint32_t foreach_num_values = 3;
 
 struct KeyValuePair {
-    char *key;
-    char *value;
+    void *key;
+    void *value;
     bool seen;
 };
 
@@ -180,7 +180,7 @@ struct KeyValuePair {
 void test_foreach(void *key, void *value, void *user_data)
 {
     static bool first = true;
-    struct KeyValuePair expected_values[FOREACH_NUM_VALUES];
+    static struct KeyValuePair expected_values[FOREACH_NUM_VALUES];
 
     if (first) {
         expected_values[0].key = (void*) 56;
@@ -208,6 +208,7 @@ void test_foreach(void *key, void *value, void *user_data)
         ck_assert_int_eq(expected_values[i].seen, false);
         expected_values[i].seen = true;
         foreach_num_values--;
+        break;
     }
 }
 
