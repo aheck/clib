@@ -63,7 +63,7 @@ jobs:
     - name: Configure CMake Windows
       if: startsWith(matrix.config.name, 'Windows')
       working-directory: ./build
-      run: cmake .. -G "Visual Studio 17" -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DENABLE_ADDRESS_SANITIZER=ON
+      run: cmake .. -G "Visual Studio 17" -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
 
     - name: Build on Unix
       if: ${{ !startsWith(matrix.config.name, 'Windows') }}
