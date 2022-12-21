@@ -11,7 +11,12 @@ project(clib C)
 
 set(C_STANDARD 99)
 set(C_STANDARD_REQUIRED ON)
-add_compile_options(-Wall)
+
+if (MSVC)
+    add_compile_options(/W3)
+else()
+    add_compile_options(-Wall)
+endif()
 
 message(STATUS "Binary dir: ${CMAKE_BINARY_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
@@ -45,6 +50,10 @@ set(CMAKE_C_FLAGS_UBSAN
 
 find_package(check REQUIRED)
 enable_testing()
+
+if (MSVC)
+    add_link_options("/NODEFAULTLIB:MSVCRT")
+endif()
 
 add_subdirectory(tests)
 add_subdirectory(perf_tests)
