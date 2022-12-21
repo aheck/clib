@@ -422,7 +422,7 @@ GString* g_string_insert(GString *string, ssize_t pos, const char *val)
     }
 
     // pos beyond last char of string
-    if (pos > string->len) {
+    if (pos > (ssize_t) string->len) {
         return string;
     }
 
@@ -435,7 +435,7 @@ GString* g_string_insert(GString *string, ssize_t pos, const char *val)
     ssize_t new_len = string->len + val_len;
 
     // enlarge buffer?
-    if (new_len + 1 > string->allocated_len) {
+    if (new_len + 1 > (ssize_t) string->allocated_len) {
         _g_string_resize(string, new_len + 1);
     }
 
@@ -453,14 +453,14 @@ GString* g_string_insert_c(GString *string, ssize_t pos, char c)
     }
 
     // pos beyond last char of string
-    if (pos > string->len) {
+    if (pos > (ssize_t) string->len) {
         return string;
     }
 
     ssize_t new_len = string->len + 1;
 
     // enlarge buffer?
-    if (new_len + 1 > string->allocated_len) {
+    if (new_len + 1 > (ssize_t) string->allocated_len) {
         _g_string_resize(string, new_len + 1);
     }
 
@@ -478,7 +478,7 @@ GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssiz
     }
 
     // pos beyond last char of string
-    if (pos > string->len) {
+    if (pos > (ssize_t) string->len) {
         return string;
     }
 
@@ -489,7 +489,7 @@ GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssiz
     ssize_t new_len = string->len + len;
 
     // enlarge buffer?
-    if (new_len + 1 > string->allocated_len) {
+    if (new_len + 1 > (ssize_t) string->allocated_len) {
         _g_string_resize(string, new_len + 1);
     }
 
@@ -511,12 +511,12 @@ GString* g_string_erase(GString *string, ssize_t pos, ssize_t len)
     }
 
     // pos beyond last char of string
-    if (pos > string->len - 1) {
+    if (pos > (ssize_t) (string->len - 1)) {
         return string;
     }
 
     // do we erase to the end of the string?
-    if (len < 0 || (pos + len) >= string->len) {
+    if (len < 0 || (pos + len) >= (ssize_t) string->len) {
         string->str[pos] = '\0';
         string->len = pos;
         return string;

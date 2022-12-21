@@ -510,7 +510,7 @@ GList* g_list_sort(GList *list, GCompareFunc compare_func)
     }
 
     uint32_t max_lists = total_len;
-    max_lists = ceil(max_lists / 2.0);
+    max_lists = (uint32_t) ceil(max_lists / 2.0);
 
     if (max_lists % 2 != 0) {
         max_lists += 1;

@@ -129,7 +129,7 @@ GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
 
     hash_table->num_slots = GHASHTABLE_MIN_SLOTS;
     hash_table->num_used = 0;
-    hash_table->resize_threshold = hash_table->num_slots * GHASHTABLE_MAX_LOAD;
+    hash_table->resize_threshold = (uint32_t) (hash_table->num_slots * GHASHTABLE_MAX_LOAD);
     hash_table->hash_func = hash_func;
     hash_table->key_equal_func = key_equal_func;
     hash_table->key_destroy_func = NULL;
@@ -240,7 +240,7 @@ bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
     hash_table->slots = new_slots;
     hash_table->num_used = 0;
     hash_table->num_slots = new_num_slots;
-    hash_table->resize_threshold = hash_table->num_slots * GHASHTABLE_MAX_LOAD;
+    hash_table->resize_threshold = (uint32_t) (hash_table->num_slots * GHASHTABLE_MAX_LOAD);
 
     memset(hash_table->slots, 0, buf_size);
 

@@ -343,7 +343,7 @@ START_TEST(test_ghashtable_resize)
     htable = g_hash_table_new(g_int_hash, g_int_equal);
 
     uint32_t init_num_slots = htable->num_slots;
-    uint32_t tipping_point = ceil(GHASHTABLE_MAX_LOAD * htable->num_slots) + 1;
+    uint32_t tipping_point = (uint32_t) (ceil(GHASHTABLE_MAX_LOAD * htable->num_slots) + 1);
 
     for (uint32_t i = 0; i < tipping_point; i++) {
         g_hash_table_insert(htable, (void*) (uint64_t) i, (void*) "Dummy String");
