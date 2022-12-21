@@ -75,21 +75,19 @@ And on Windows with:
 cmake --build . --config Release
 ```
 
-When creating a debug build you can also use the following options to enable a
-sanitizer:
+The following build types are supported:
 
-|Name | Description | Default |
-|:---:|:---|:---:|
-| ENABLE_ADDRESS_SANITIZER | Build with address sanitizer | OFF |
-| ENABLE_MEMORY_SANITIZER | Build with memory sanitizer | OFF |
-| ENABLE_LEAK_SANITIZER | Build with leak sanitizer | OFF |
+|Name | Description |
+|:---:|:---:|
+| Debug | Build with debug info but without a sanitizer |
+| Release | Build with full optimization and without debug support |
+| asan | Build with debug and address sanitizer |
+| lsan | Build with debug and leak sanitizer |
+| msan | Build with debug and memory sanitizer |
+| ubsan | Build with debug and undefined behaviour sanitizer |
 
-Sanitizers cost performance and some are incompatible with each other so can only
-use one sanitizer for any build.
-
-For most development purposes it is best to create a debug build and enable
-address sanitizer:
+For most development purposes it is best to create an address sanitizer build:
 
 ```bash
-cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DENABLE_ADDRESS_SANITIZER=ON
+cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=asan
 ```
