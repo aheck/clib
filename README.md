@@ -62,7 +62,7 @@ cmake .. -G "Visual Studio 17"
 cmake --build . --config Debug
 ```
 
-You can create a release build an Linux and macOS with:
+You can create a release build on Linux and macOS with:
 
 ```bash
 cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
@@ -78,7 +78,7 @@ cmake --build . --config Release
 The following build types are supported:
 
 |Name | Description |
-|:---:|:---:|
+|---|---|
 | Debug | Build with debug info but without a sanitizer |
 | Release | Build with full optimization and without debug support |
 | asan | Build with debug and address sanitizer |
