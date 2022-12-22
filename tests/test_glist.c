@@ -707,8 +707,6 @@ START_TEST(test_glist_nth)
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
 
-    ck_assert_ptr_eq(g_list_nth(list, -2), NULL);
-    ck_assert_ptr_eq(g_list_nth(list, -1), NULL);
     ck_assert_ptr_eq(g_list_nth(list, 0), list);
     ck_assert_ptr_eq(g_list_nth(list, 1), list->next);
     ck_assert_ptr_eq(g_list_nth(list, 2), list->next->next);
@@ -731,8 +729,6 @@ START_TEST(test_glist_nth_data)
     list = g_list_append(list, element2);
     list = g_list_append(list, element3);
 
-    ck_assert_ptr_eq(g_list_nth_data(list, -2), NULL);
-    ck_assert_ptr_eq(g_list_nth_data(list, -1), NULL);
     ck_assert_ptr_eq(g_list_nth_data(list, 0), element1);
     ck_assert_ptr_eq(g_list_nth_data(list, 1), element2);
     ck_assert_ptr_eq(g_list_nth_data(list, 2), element3);
@@ -752,8 +748,6 @@ START_TEST(test_glist_nth_prev)
 
     GList *last = list->next->next;
 
-    ck_assert_ptr_eq(g_list_nth_prev(last, -2), NULL);
-    ck_assert_ptr_eq(g_list_nth_prev(last, -1), NULL);
     ck_assert_ptr_eq(g_list_nth_prev(last, 0), last);
     ck_assert_ptr_eq(g_list_nth_prev(last, 1), last->prev);
     ck_assert_ptr_eq(g_list_nth_prev(last, 2), last->prev->prev);
