@@ -31,6 +31,7 @@
 typedef SSIZE_T ssize_t;
 #endif
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -144,13 +145,14 @@ GString* g_string_new(const char *init)
 
     string = malloc(sizeof(GString));
     if (string == NULL) {
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_new: Out of memory");
+        exit(1);
     }
 
     string->str = malloc(buf_size);
     if (string->str == NULL) {
-        free(string);
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_new: Out of memory");
+        exit(1);
     }
 
 #ifdef GSTRING_DEBUG
@@ -177,15 +179,16 @@ GString* g_string_new_len(const char *init, size_t len)
 
     string = malloc(sizeof(GString));
     if (string == NULL) {
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_new_len: Out of memory");
+        exit(1);
     }
 
     size_t buf_size = len + 1;
 
     string->str = malloc(buf_size);
     if (string->str == NULL) {
-        free(string);
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_new_len: Out of memory");
+        exit(1);
     }
 
     memcpy(string->str, init, len);
@@ -203,13 +206,14 @@ GString* g_string_sized_new(ssize_t dfl_size)
 
     string = malloc(sizeof(GString));
     if (string == NULL) {
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_sized_new: Out of memory");
+        exit(1);
     }
 
     string->str = malloc(dfl_size);
     if (string->str == NULL) {
-        free(string);
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_string_sized_new: Out of memory");
+        exit(1);
     }
 
     string->len = 0;
@@ -218,21 +222,21 @@ GString* g_string_sized_new(ssize_t dfl_size)
     return string;
 }
 
-bool _g_string_resize(GString *string, size_t requested_size)
+void _g_string_resize(GString *string, size_t requested_size)
 {
     char *new_buf;
     size_t buf_size;
 
     if (requested_size <= string->allocated_len) {
-        return false;
+        return;
     }
 
     buf_size = requested_size * 2;
 
     new_buf = realloc(string->str, buf_size);
-
     if (new_buf == NULL) {
-        return false;
+        fprintf(stderr, "FATAL ERROR: g_string_new: Out of memory");
+        exit(1);
     }
 
     string->str = new_buf;
@@ -243,8 +247,6 @@ bool _g_string_resize(GString *string, size_t requested_size)
     memset(&string->str[string->len + 1], '+', buf_size - string->len - 1);
     string->str[buf_size - 1] = '\0';
 #endif
-
-    return true;
 }
 
 GString* g_string_assign(GString *string, const char *rval)
@@ -258,9 +260,7 @@ GString* g_string_assign(GString *string, const char *rval)
     new_len = strlen(rval);
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     memcpy(string->str, rval, new_len + 1);
@@ -282,9 +282,7 @@ GString* g_string_append(GString *string, const char *val)
     new_len = val_len + string->len;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     memcpy(&string->str[string->len], val, val_len + 1);
@@ -300,9 +298,7 @@ GString* g_string_append_c(GString *string, char c)
     new_len = string->len + 1;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     string->str[string->len] = c;
@@ -325,9 +321,7 @@ GString* g_string_append_len(GString *string, const char *val, ssize_t len)
     size_t new_len = len + string->len;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     memcpy(&string->str[string->len], val, len + 1);
@@ -349,9 +343,7 @@ GString* g_string_prepend(GString *string, const char *val)
     new_len = val_len + string->len;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     // move current string to end
@@ -372,9 +364,7 @@ GString* g_string_prepend_c(GString *string, char c)
     new_len = string->len + 1;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     // move current string to end
@@ -397,9 +387,7 @@ GString* g_string_prepend_len(GString *string, const char *val, ssize_t len)
     size_t new_len = len + string->len;
 
     if (new_len + 1 > string->allocated_len) {
-        if (!_g_string_resize(string, new_len + 1)) {
-            return string;
-        }
+        _g_string_resize(string, new_len + 1);
     }
 
     // move current string to end

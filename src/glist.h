@@ -350,7 +350,14 @@ void g_list_free(GList *list)
 
 GList* g_list_alloc()
 {
-    return (GList*) malloc(sizeof(GList));
+    GList *list = (GList*) malloc(sizeof(GList));
+
+    if (list == NULL) {
+        fprintf(stderr, "FATAL ERROR: g_list_alloc: Out of memory");
+        exit(1);
+    }
+
+    return list;
 }
 
 #define g_list_free1 g_list_free_1

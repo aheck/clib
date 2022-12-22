@@ -124,7 +124,8 @@ GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
 
     GHashTable *hash_table = (GHashTable*) malloc(sizeof(GHashTable));
     if (hash_table == NULL) {
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_hash_table_new: Out of memory");
+        exit(1);
     }
 
     hash_table->num_slots = GHASHTABLE_MIN_SLOTS;
@@ -138,8 +139,8 @@ GHashTable *g_hash_table_new(GHashFunc hash_func, GEqualFunc key_equal_func)
     size_t buf_size = hash_table->num_slots * sizeof(struct GHashTableSlot);
     hash_table->slots = malloc(buf_size);
     if (hash_table->slots == NULL) {
-        free(hash_table);
-        return NULL;
+        fprintf(stderr, "FATAL ERROR: g_hash_table_new: Out of memory");
+        exit(1);
     }
 
     memset(hash_table->slots, 0, buf_size);
@@ -225,7 +226,7 @@ uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint3
     return 0;
 }
 
-bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
+void _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
 {
     uint32_t old_num_slots = hash_table->num_slots;
     struct GHashTableSlot *old_slots = hash_table->slots;
@@ -234,7 +235,8 @@ bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
     size_t buf_size = new_num_slots * sizeof(struct GHashTableSlot);
     new_slots = malloc(buf_size);
     if (new_slots == NULL) {
-        return false;
+        fprintf(stderr, "FATAL ERROR: _g_hash_table_resize: Out of memory");
+        exit(1);
     }
 
     hash_table->slots = new_slots;
@@ -251,8 +253,6 @@ bool _g_hash_table_resize(GHashTable *hash_table, uint32_t new_num_slots)
     }
 
     free(old_slots);
-
-    return true;
 }
 
 void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
@@ -267,8 +267,6 @@ void g_hash_table_insert(GHashTable *hash_table, void *key, void *value)
     if (hash_table->slots[start_slot].used == false) {
         slot = start_slot;
     } else {
-        // check if the value is already in the hash table
-
         // hashed slot is already used
         // search for next free one
         slot = _g_hash_table_find_free_slot(hash_table, start_slot, key);
