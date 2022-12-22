@@ -7,6 +7,11 @@
 #define _CLIB_IMPL 1
 #include "ghashtable.h"
 
+// declare internal functions of GHashTable here so we can test them
+uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slot, void *key);
+uint32_t _g_hash_table_calc_start_slot(GHashTable *hash_table, void *key);
+uint32_t _g_hash_table_find_slot_by_key(GHashTable *hash_table, void *key, uint32_t start_slot, bool *ret_found);
+
 // Fake hash function for testing
 //
 // The static hash value makes the location of the data in the hash table
