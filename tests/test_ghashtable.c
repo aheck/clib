@@ -366,6 +366,29 @@ START_TEST(test_ghashtable_resize)
 }
 END_TEST
 
+START_TEST(test_ghashtable_insert_extensive)
+{
+    const int num_inserts = 10000;
+    GHashTable *htable = NULL;
+    htable = g_hash_table_new(g_int_hash, g_int_equal);
+
+    // insert 10000 numbers with key == value into the hash table
+    for (int i = 0; i < num_inserts; i++) {
+        g_hash_table_insert(htable, (void*) (uint64_t) i, (void*) (uint64_t) i);
+    }
+
+    ck_assert_int_eq(htable->num_slots, 32768);
+
+    // check if all 10000 numbers exist in the hash table
+    for (int i = 0; i < num_inserts; i++) {
+        void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
+        ck_assert_int_eq((uint64_t) result, i);
+    }
+
+    g_hash_table_destroy(htable);
+}
+END_TEST
+
 START_TEST(test_ghashtable_free_keys_and_values)
 {
     GHashTable *htable = NULL;
@@ -426,6 +449,7 @@ Suite* ghashtable_suite(void)
     tcase_add_test(tc_core, test_ghashtable_insert_after_remove);
     tcase_add_test(tc_core, test_ghashtable_double_insert);
     tcase_add_test(tc_core, test_ghashtable_resize);
+    tcase_add_test(tc_core, test_ghashtable_insert_extensive);
     tcase_add_test(tc_core, test_ghashtable_free_keys_and_values);
 
     suite_add_tcase(s, tc_core);
