@@ -75,7 +75,7 @@ And on Windows with:
 cmake --build . --config Release
 ```
 
-The following build types are supported:
+The following build types are supported (only on UNIX):
 
 |Name | Description |
 |---|---|
@@ -90,4 +90,12 @@ For most development purposes it is best to create an address sanitizer build:
 
 ```bash
 cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=asan
+```
+
+### Asan on Windows
+
+MSVC supports only Asan at the moment. To build with it use the following command:
+
+```bash
+cmake --build . --config Asan
 ```
