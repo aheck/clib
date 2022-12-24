@@ -378,6 +378,41 @@ START_TEST(test_ghashtable_insert_extensive)
     }
 
     ck_assert_int_eq(htable->num_slots, 32768);
+    ck_assert_int_eq(g_hash_table_size(htable), num_inserts);
+
+    // check if all 10000 numbers exist in the hash table
+    for (int i = 0; i < num_inserts; i++) {
+        void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
+        ck_assert_int_eq((uint64_t) result, i);
+    }
+
+    // remove the last 5000 inserts
+    for (int i = num_inserts / 2; i < num_inserts; i++) {
+        g_hash_table_remove(htable, (void*) (uint64_t) i);
+    }
+
+    ck_assert_int_eq(htable->num_slots, 32768);
+    ck_assert_int_eq(g_hash_table_size(htable), num_inserts / 2);
+
+    // check if all 5000 remaining numbers still exist in the hash table
+    for (int i = 0; i < num_inserts / 2; i++) {
+        void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
+        ck_assert_int_eq((uint64_t) result, i);
+    }
+
+    // check if all 5000 deleted numbers are gone
+    for (int i = num_inserts / 2; i < num_inserts; i++) {
+        void *result = g_hash_table_lookup(htable, (void*) (uint64_t) i);
+        ck_assert_ptr_null(result);
+    }
+
+    // insert the 5000 removed entries again
+    for (int i = num_inserts / 2; i < num_inserts; i++) {
+        g_hash_table_insert(htable, (void*) (uint64_t) i, (void*) (uint64_t) i);
+    }
+
+    ck_assert_int_eq(htable->num_slots, 32768);
+    ck_assert_int_eq(g_hash_table_size(htable), num_inserts);
 
     // check if all 10000 numbers exist in the hash table
     for (int i = 0; i < num_inserts; i++) {
