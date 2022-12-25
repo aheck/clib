@@ -34,27 +34,25 @@ if(MSVC)
     add_compile_options("$<$<CONFIG:Asan>:/DEBUG /fsanitize=address>")
     add_link_options("$<$<CONFIG:Debug>:/NODEFAULTLIB:MSVCRT>")
 else()
-    #
     # Support for sanitizer build types
-    #
     set(CMAKE_C_FLAGS_ASAN
         "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1"
-        CACHE STRING "Flags used by the C++ compiler during AddressSanitizer builds."
+        CACHE STRING "Flags used by the C compiler during AddressSanitizer builds."
         FORCE)
     
     set(CMAKE_C_FLAGS_LSAN
         "-fsanitize=leak -fno-omit-frame-pointer -g -O1"
-        CACHE STRING "Flags used by the C++ compiler during LeakSanitizer builds."
+        CACHE STRING "Flags used by the C compiler during LeakSanitizer builds."
         FORCE)
     
     set(CMAKE_C_FLAGS_MSAN
         "-fsanitize=memory -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2 -fno-omit-frame-pointer -g -O2"
-        CACHE STRING "Flags used by the C++ compiler during MemorySanitizer builds."
+        CACHE STRING "Flags used by the C compiler during MemorySanitizer builds."
         FORCE)
     
     set(CMAKE_C_FLAGS_UBSAN
         "-fsanitize=undefined"
-        CACHE STRING "Flags used by the C++ compiler during UndefinedBehaviourSanitizer builds."
+        CACHE STRING "Flags used by the C compiler during UndefinedBehaviourSanitizer builds."
         FORCE)
 endif()
 
