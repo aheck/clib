@@ -225,7 +225,7 @@ START_TEST(test_gstring_append_len)
 
     string = g_string_new("Hello World");
 
-    g_string_append_len(string, "!!!", 3);
+    g_string_append_len(string, "!!!X", 3);
     ck_assert_int_eq(string->len, 14);
     ck_assert_str_eq("Hello World!!!", string->str);
 

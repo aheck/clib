@@ -324,8 +324,9 @@ GString* g_string_append_len(GString *string, const char *val, ssize_t len)
         _g_string_resize(string, new_len + 1);
     }
 
-    memcpy(&string->str[string->len], val, len + 1);
+    memcpy(&string->str[string->len], val, len);
     string->len = new_len;
+    string->str[new_len] = '\0';
 
     return string;
 }
