@@ -40,7 +40,6 @@ typedef SSIZE_T ssize_t;
 #include <ctype.h>
 
 #define GSTRING_MIN_BUF_SIZE 32
-#define GSTRING_DEBUG 1
 
 #define TRUE  true
 #define FALSE false
@@ -155,11 +154,6 @@ GString* g_string_new(const char *init)
         exit(1);
     }
 
-#ifdef GSTRING_DEBUG
-        memset(string->str, '+', buf_size);
-        string->str[buf_size - 1] = '\0';
-#endif
-
     // fill GString attributes
     if (init_len > 0) {
         memcpy(string->str, init, init_len + 1);
@@ -241,12 +235,6 @@ void _g_string_resize(GString *string, size_t requested_size)
 
     string->str = new_buf;
     string->allocated_len = buf_size;
-
-#ifdef GSTRING_DEBUG
-    // FIXME
-    memset(&string->str[string->len + 1], '+', buf_size - string->len - 1);
-    string->str[buf_size - 1] = '\0';
-#endif
 }
 
 GString* g_string_assign(GString *string, const char *rval)
