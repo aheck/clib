@@ -13,7 +13,7 @@ int compare_int(const void *a, const void *b)
 START_TEST(test_garray_new)
 {
     GArray *array = NULL;
-    array = g_array_new(false, false, sizeof(uint32_t));
+    array = g_array_new(false, false, sizeof(int));
 
     ck_assert_ptr_nonnull(array);
     ck_assert_ptr_null(array->data);
@@ -31,7 +31,7 @@ END_TEST
 START_TEST(test_garray_sized_new)
 {
     GArray *array = NULL;
-    array = g_array_sized_new(false, false, sizeof(uint32_t), 10);
+    array = g_array_sized_new(false, false, sizeof(int), 10);
 
     ck_assert_ptr_nonnull(array);
     ck_assert_ptr_nonnull(array->data);
@@ -51,7 +51,7 @@ START_TEST(test_garray_steal)
     GArray *array = NULL;
     size_t len = 0;
 
-    array = g_array_new(false, false, sizeof(uint32_t));
+    array = g_array_new(false, false, sizeof(int));
 
     int vals[] = {34, 82, 43, 12, 71};
     g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
@@ -77,7 +77,7 @@ START_TEST(test_garray_steal_zero_terminated)
     GArray *array = NULL;
     size_t len = 0;
 
-    array = g_array_new(true, false, sizeof(uint32_t));
+    array = g_array_new(true, false, sizeof(int));
 
     int vals[] = {34, 82, 43, 12, 71};
     g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
@@ -726,6 +726,36 @@ START_TEST(test_garray_zero_termination)
 }
 END_TEST
 
+START_TEST(test_garray_free)
+{
+    GArray *array = NULL;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    int vals[] = {34, 82, 43, 12, 71};
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+
+    char *result = g_array_free(array, true);
+    ck_assert_ptr_null(result);
+}
+END_TEST
+
+START_TEST(test_garray_free_without_segment)
+{
+    GArray *array = NULL;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    int vals[] = {34, 82, 43, 12, 71};
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+
+    char *result = g_array_free(array, false);
+    ck_assert_ptr_nonnull(result);
+
+    free(result);
+}
+END_TEST
+
 Suite* garray_suite(void)
 {
     Suite *s;
@@ -768,6 +798,9 @@ Suite* garray_suite(void)
     tcase_add_test(tc_core, test_garray_set_size);
 
     tcase_add_test(tc_core, test_garray_zero_termination);
+
+    tcase_add_test(tc_core, test_garray_free);
+    tcase_add_test(tc_core, test_garray_free_without_segment);
 
     suite_add_tcase(s, tc_core);
 
