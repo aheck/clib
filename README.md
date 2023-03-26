@@ -1,7 +1,7 @@
 # CLib
 
 CLib is a header-only library for C99 that implements the most important classes
-from GLib: **GList**, **GHashTable** and **GString**.
+from GLib: **GArray**, **GHashTable**, **GList** and **GString**.
 
 GLib is a great library that provides some classes that are so useful that you
 want to use them in every C project. For some of them you might even wish they
