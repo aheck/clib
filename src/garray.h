@@ -70,7 +70,7 @@ char* g_array_free(GArray *array, bool free_segment);
 #ifdef _CLIB_IMPL
 void _g_array_zero_terminate(GArray *array)
 {
-    bzero(&array->data[array->len * array->_element_size], array->_element_size);
+    memset(&array->data[array->len * array->_element_size], 0, array->_element_size);
 }
 
 void _g_array_resize_if_needed(GArray *array, unsigned int new_elements)
@@ -93,7 +93,7 @@ void _g_array_resize_if_needed(GArray *array, unsigned int new_elements)
     }
 
     if (array->_clear) {
-        bzero(&array->data[array->_allocated_elements * array->_element_size],
+        memset(&array->data[array->_allocated_elements * array->_element_size], 0,
                 (needed - array->_allocated_elements) * array->_element_size);
     }
 
