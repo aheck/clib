@@ -247,6 +247,10 @@ GArray* g_array_insert_vals(GArray *array, unsigned int index, const void *data,
     memcpy(&array->data[index * array->_element_size], data, len * array->_element_size);
     array->len += len;
 
+    if (array->_zero_terminated) {
+        _g_array_zero_terminate(array);
+    }
+
     return array;
 }
 

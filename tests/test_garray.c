@@ -282,6 +282,57 @@ START_TEST(test_garray_insert_val)
 }
 END_TEST
 
+START_TEST(test_garray_insert_val_beginning)
+{
+    GArray *array = NULL;
+    GArray *result = NULL;
+
+    int val1 = 5;
+    int val2 = 8;
+    int val3 = 13;
+
+    array = g_array_new(false, false, sizeof(int));
+    result = g_array_append_val(array, val1);
+    result = g_array_append_val(array, val2);
+    result = g_array_insert_val(array, 0, val3);
+
+    ck_assert_ptr_eq(array, result);
+    ck_assert_int_eq(array->len, 3);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 13);
+    ck_assert_int_eq(g_array_index(array, int, 1), 5);
+    ck_assert_int_eq(g_array_index(array, int, 2), 8);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_insert_val_end)
+{
+    GArray *array = NULL;
+    GArray *result = NULL;
+
+    int val1 = 5;
+    int val2 = 8;
+    int val3 = 13;
+
+    array = g_array_new(false, false, sizeof(int));
+    result = g_array_append_val(array, val1);
+    result = g_array_append_val(array, val2);
+    result = g_array_insert_val(array, 2, val3);
+
+    ck_assert_ptr_eq(array, result);
+    ck_assert_int_eq(array->len, 3);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 5);
+    ck_assert_int_eq(g_array_index(array, int, 1), 8);
+    ck_assert_int_eq(g_array_index(array, int, 2), 13);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+
 START_TEST(test_garray_insert_vals)
 {
     GArray *array = NULL;
@@ -627,8 +678,27 @@ START_TEST(test_garray_zero_termination)
     ck_assert_int_eq(g_array_index(array, int, 0), 45);
     ck_assert_int_eq(g_array_index(array, int, 1), 28);
     ck_assert_int_eq(g_array_index(array, int, 2), 77);
-    ck_assert_int_eq(g_array_index(array, int, 6), 23);
-    ck_assert_int_eq(g_array_index(array, int, 7), 11);
+    ck_assert_int_eq(g_array_index(array, int, 3), 23);
+    ck_assert_int_eq(g_array_index(array, int, 4), 11);
+
+    // zero terminated?
+    ck_assert_int_eq(g_array_index(array, int, array->len), 0);
+
+    //
+    // after appending by using insert
+    //
+    int insert_val = 76;
+    g_array_insert_val(array, 5, insert_val);
+
+    ck_assert_int_eq(array->len, 6);
+    ck_assert_int_eq(array->_allocated_elements, 11);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 45);
+    ck_assert_int_eq(g_array_index(array, int, 1), 28);
+    ck_assert_int_eq(g_array_index(array, int, 2), 77);
+    ck_assert_int_eq(g_array_index(array, int, 3), 23);
+    ck_assert_int_eq(g_array_index(array, int, 4), 11);
+    ck_assert_int_eq(g_array_index(array, int, 5), 76);
 
     // zero terminated?
     ck_assert_int_eq(g_array_index(array, int, array->len), 0);
@@ -681,6 +751,8 @@ Suite* garray_suite(void)
     tcase_add_test(tc_core, test_garray_prepend_vals);
 
     tcase_add_test(tc_core, test_garray_insert_val);
+    tcase_add_test(tc_core, test_garray_insert_val_beginning);
+    tcase_add_test(tc_core, test_garray_insert_val_end);
     tcase_add_test(tc_core, test_garray_insert_vals);
 
     tcase_add_test(tc_core, test_garray_remove_index);
