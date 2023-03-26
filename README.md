@@ -37,6 +37,15 @@ need to include the header file:
 #include <gstring.h>
 ```
 
+## Out of Memory Errors
+
+This library handles out of memory errors by printing an error message to
+*stderr* and terminating the program via a call to *exit(1)*. This behaviour is
+controversial and depending on your use case it might prevent you from using
+clib. Unfortunately, this is how GLib handles out of memory errors and since
+a goal of this lib is to be compatible with GLib we have to handle it the same
+way.
+
 ## Building the Tests
 
 Since this library is header-only the only purpose of the build system is to
