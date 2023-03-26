@@ -39,7 +39,7 @@ jobs:
         echo github.event_name: ${{ github.event_name }}
 
     - name: Install dependencies
-      run: pip3 install conan
+      run: pip3 install conan==1.59
 
     - name: Create build directory on Unix
       if: ${{ !startsWith(matrix.config.name, 'Windows') }}
