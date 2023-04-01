@@ -37,6 +37,24 @@ need to include the header file:
 #include <gstring.h>
 ```
 
+## Documentation
+
+Since clib aims to be as API compatible as possible with GLib it is best to look
+up the respective class in the GLib documentation:
+
+[GArray](https://libsoup.org/glib/glib-Arrays.html)
+
+[GHashTable](https://libsoup.org/glib/glib-Hash-Tables.html)
+
+[GList](https://libsoup.org/glib/glib-Doubly-Linked-Lists.html)
+
+[GString](https://libsoup.org/glib/glib-Strings.html)
+
+Most methods are implemented. Missing methods and different behaviour are
+considered bugs.
+
+Pull requests are welcome!
+
 ## Out of Memory Errors
 
 This library handles out of memory errors by printing an error message to
@@ -45,6 +63,9 @@ controversial and depending on your use case it might prevent you from using
 clib. Unfortunately, this is how GLib handles out of memory errors and since
 a goal of this lib is to be compatible with GLib we have to handle it the same
 way.
+
+For most use cases (like the ones for which people use GLib) this shouldn't be a
+big problem, though.
 
 ## Building the Tests
 
