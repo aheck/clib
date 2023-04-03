@@ -351,7 +351,7 @@ void g_array_sort_with_data(GArray *array, GCompareDataFunc compare_func, void *
     qsort_r(array->data, array->len, array->_element_size, compare_func, user_data);
 #elif (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
     struct _garray_qsort_r_data tmp;
-    tmp.arg = user_data;
+    tmp.user_data = user_data;
     tmp.compare_func = compare_func;
     qsort_s(array->data, array->len, array->_element_size, &_garray_qsort_r_arg_swap, &tmp);
 #else
