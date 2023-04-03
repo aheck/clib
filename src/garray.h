@@ -35,7 +35,7 @@ void qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, 
 
 // Needed for qsort_s
 #if (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
-<search.h>
+#include <search.h>
 #endif
 
 #include <stdio.h>
