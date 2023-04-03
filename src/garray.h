@@ -26,6 +26,18 @@
 #ifndef _GARRAY_H
 #define _GARRAY_H
 
+// We would need to define _GNU_SOURCE for stdlib.h to declare qsort_r. Since we
+// are header-only we better declare it ourselves to make sure we don't define
+// _GNU_SOURCE when we shouldn't
+#ifdef __linux__
+void qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg);
+#endif
+
+// Needed for qsort_s
+#if (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
+<search.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -60,6 +72,7 @@ GArray* g_array_remove_index(GArray *array, unsigned int index);
 GArray* g_array_remove_index_fast(GArray *array, unsigned int index);
 GArray* g_array_remove_range(GArray *array, unsigned int index, unsigned int length);
 void g_array_sort(GArray *array, GCompareFunc compare_func);
+void g_array_sort_with_data(GArray *array, GCompareDataFunc compare_func, void *user_data);
 bool g_array_binary_search(GArray *array, const void *target, GCompareFunc compare_func, unsigned int *out_match_index);
 #define g_array_index(a, t, i) (t) a->data[i * a->_element_size]
 GArray* g_array_set_size(GArray *array, unsigned int length);
@@ -68,6 +81,18 @@ void g_array_set_clear_func(GArray *array, GDestroyNotify clear_func);
 char* g_array_free(GArray *array, bool free_segment);
 
 #ifdef _CLIB_IMPL
+struct _garray_qsort_r_data
+{
+    void *user_data;
+    int (*compare_func)(const void *a, const void *b, void *user_data);
+};
+
+int _garray_qsort_r_arg_swap(void *wrapper_arg, const void *a, const void *b)
+{
+    struct _garray_qsort_r_data *wrapper = (struct _garray_qsort_r_data*) wrapper_arg;
+    return (wrapper->compare_func)(a, b, wrapper->user_data);
+}
+
 void _g_array_zero_terminate(GArray *array)
 {
     memset(&array->data[array->len * array->_element_size], 0, array->_element_size);
@@ -318,6 +343,23 @@ GArray* g_array_remove_range(GArray *array, unsigned int index, unsigned int len
 void g_array_sort(GArray *array, GCompareFunc compare_func)
 {
     qsort(array->data, array->len, array->_element_size, compare_func);
+}
+
+void g_array_sort_with_data(GArray *array, GCompareDataFunc compare_func, void *user_data)
+{
+#if (defined __linux__)
+    qsort_r(array->data, array->len, array->_element_size, compare_func, user_data);
+#elif (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
+    struct _garray_qsort_r_data tmp;
+    tmp.arg = user_data;
+    tmp.compar = compare_func;
+    qsort_s(array->data, array->len, array->_element_size, &_garray_qsort_r_arg_swap, &tmp);
+#elif // BSD / macOS
+    struct _garray_qsort_r_data tmp;
+    tmp.user_data = user_data;
+    tmp.compar = compare_func;
+    qsort_r(array->data, array->len, array->_element_size, &tmp, &_garray_qsort_r_arg_swap);
+#endif
 }
 
 bool g_array_binary_search(GArray *array, const void *target, GCompareFunc compare_func, unsigned int *out_match_index)

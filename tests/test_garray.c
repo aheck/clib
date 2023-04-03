@@ -10,6 +10,12 @@ int compare_int(const void *a, const void *b)
     return *((int*) a) - *((int*) b);
 }
 
+int compare_int_with_data(const void *a, const void *b, void *user_data)
+{
+    ck_assert_int_eq(*((int*) user_data), 42);
+    return *((int*) a) - *((int*) b);
+}
+
 START_TEST(test_garray_new)
 {
     GArray *array = NULL;
@@ -515,6 +521,34 @@ START_TEST(test_garray_sort)
 }
 END_TEST
 
+START_TEST(test_garray_sort_with_data)
+{
+    GArray *array = NULL;
+    int vals[] = {4, 8, 5, 2, 7, 9, 1, 3, 0, 6};
+    int user_data = 42;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+    g_array_sort_with_data(array, compare_int_with_data, &user_data);
+
+    ck_assert_int_eq(array->len, 10);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 0);
+    ck_assert_int_eq(g_array_index(array, int, 1), 1);
+    ck_assert_int_eq(g_array_index(array, int, 2), 2);
+    ck_assert_int_eq(g_array_index(array, int, 3), 3);
+    ck_assert_int_eq(g_array_index(array, int, 4), 4);
+    ck_assert_int_eq(g_array_index(array, int, 5), 5);
+    ck_assert_int_eq(g_array_index(array, int, 6), 6);
+    ck_assert_int_eq(g_array_index(array, int, 7), 7);
+    ck_assert_int_eq(g_array_index(array, int, 8), 8);
+    ck_assert_int_eq(g_array_index(array, int, 9), 9);
+
+    g_array_free(array, true);
+}
+END_TEST
+
 START_TEST(test_garray_set_size)
 {
     GArray *array = NULL;
@@ -794,6 +828,7 @@ Suite* garray_suite(void)
     tcase_add_test(tc_core, test_garray_remove_range);
 
     tcase_add_test(tc_core, test_garray_sort);
+    tcase_add_test(tc_core, test_garray_sort_with_data);
 
     tcase_add_test(tc_core, test_garray_set_size);
 
