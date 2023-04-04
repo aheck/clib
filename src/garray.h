@@ -266,11 +266,21 @@ GArray* g_array_prepend_vals(GArray *array, const void *data, unsigned int len)
 
 GArray* g_array_insert_vals(GArray *array, unsigned int index, const void *data, unsigned int len)
 {
-    _g_array_resize_if_needed(array, len);
+    unsigned int needed = len;
 
-    memmove(&array->data[(index + len) * array->_element_size], &array->data[index * array->_element_size], (array->len - index) * array->_element_size);
+    // we need to allocate extra bytes if the index to insert at is outside of
+    // the array
+    if (index > (array->len - 1)) {
+        needed += index - array->len;
+    }
+
+    _g_array_resize_if_needed(array, needed);
+
+    if (index < array->len) {
+        memmove(&array->data[(index + len) * array->_element_size], &array->data[index * array->_element_size], (array->len - index) * array->_element_size);
+    }
     memcpy(&array->data[index * array->_element_size], data, len * array->_element_size);
-    array->len += len;
+    array->len += needed;
 
     if (array->_zero_terminated) {
         _g_array_zero_terminate(array);

@@ -371,6 +371,72 @@ START_TEST(test_garray_insert_vals)
 }
 END_TEST
 
+START_TEST(test_garray_insert_vals_non_existing_index)
+{
+    GArray *array = NULL;
+    GArray *result = NULL;
+
+    int vals1[] = {4, 8, 2, 7, 1, 3, 6};
+    int vals2[] = {12, 67, 89};
+
+    array = g_array_new(false, false, sizeof(int));
+    result = g_array_append_vals(array, vals1, sizeof(vals1) / sizeof(int));
+    result = g_array_insert_vals(array, 10, vals2, sizeof(vals2) / sizeof(int));
+
+    ck_assert_ptr_eq(array, result);
+    ck_assert_int_eq(array->len, 13);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 4);
+    ck_assert_int_eq(g_array_index(array, int, 1), 8);
+    ck_assert_int_eq(g_array_index(array, int, 2), 2);
+    ck_assert_int_eq(g_array_index(array, int, 3), 7);
+    ck_assert_int_eq(g_array_index(array, int, 4), 1);
+    ck_assert_int_eq(g_array_index(array, int, 5), 3);
+    ck_assert_int_eq(g_array_index(array, int, 6), 6);
+
+    ck_assert_int_eq(g_array_index(array, int, 10), 12);
+    ck_assert_int_eq(g_array_index(array, int, 11), 67);
+    ck_assert_int_eq(g_array_index(array, int, 12), 89);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_insert_vals_non_existing_index_clear)
+{
+    GArray *array = NULL;
+    GArray *result = NULL;
+
+    int vals1[] = {4, 8, 2, 7, 1, 3, 6};
+    int vals2[] = {12, 67, 89};
+
+    array = g_array_new(false, true, sizeof(int));
+    result = g_array_append_vals(array, vals1, sizeof(vals1) / sizeof(int));
+    result = g_array_insert_vals(array, 10, vals2, sizeof(vals2) / sizeof(int));
+
+    ck_assert_ptr_eq(array, result);
+    ck_assert_int_eq(array->len, 13);
+
+    ck_assert_int_eq(g_array_index(array, int, 0), 4);
+    ck_assert_int_eq(g_array_index(array, int, 1), 8);
+    ck_assert_int_eq(g_array_index(array, int, 2), 2);
+    ck_assert_int_eq(g_array_index(array, int, 3), 7);
+    ck_assert_int_eq(g_array_index(array, int, 4), 1);
+    ck_assert_int_eq(g_array_index(array, int, 5), 3);
+    ck_assert_int_eq(g_array_index(array, int, 6), 6);
+
+    ck_assert_int_eq(g_array_index(array, int, 7), 0);
+    ck_assert_int_eq(g_array_index(array, int, 8), 0);
+    ck_assert_int_eq(g_array_index(array, int, 9), 0);
+
+    ck_assert_int_eq(g_array_index(array, int, 10), 12);
+    ck_assert_int_eq(g_array_index(array, int, 11), 67);
+    ck_assert_int_eq(g_array_index(array, int, 12), 89);
+
+    g_array_free(array, true);
+}
+END_TEST
+
 START_TEST(test_garray_remove_index)
 {
     GArray *array = NULL;
@@ -818,6 +884,8 @@ Suite* garray_suite(void)
     tcase_add_test(tc_core, test_garray_insert_val_beginning);
     tcase_add_test(tc_core, test_garray_insert_val_end);
     tcase_add_test(tc_core, test_garray_insert_vals);
+    tcase_add_test(tc_core, test_garray_insert_vals_non_existing_index);
+    tcase_add_test(tc_core, test_garray_insert_vals_non_existing_index_clear);
 
     tcase_add_test(tc_core, test_garray_remove_index);
     tcase_add_test(tc_core, test_garray_remove_index_beginning);
