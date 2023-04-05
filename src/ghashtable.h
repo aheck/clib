@@ -183,7 +183,7 @@ uint32_t _g_hash_table_find_free_slot(GHashTable *hash_table, uint32_t start_slo
 
     // this should never happen
     fprintf(stderr, "BUG: _g_hash_table_find_free_slot: Failed to find an empty slot.");
-    exit(1);
+    abort();
 
     return 0;
 }
