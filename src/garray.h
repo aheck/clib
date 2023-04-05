@@ -375,6 +375,46 @@ void g_array_sort_with_data(GArray *array, GCompareDataFunc compare_func, void *
 
 bool g_array_binary_search(GArray *array, const void *target, GCompareFunc compare_func, unsigned int *out_match_index)
 {
+    if (array == NULL) {
+        return false;
+    }
+
+    if (target == NULL) {
+        return false;
+    }
+
+    if (array->len <= 0) {
+        return false;
+    }
+
+    int l = 0;
+    int r = array->len - 1;
+    unsigned int m = 0;
+
+    while (l <= r) {
+        m = (r - l) / 2 + l; // (l + r) / 2 but prevent overflow
+
+        if (compare_func(&array->data[m * array->_element_size], target) < 0) {
+            l = m + 1;
+        } else if (compare_func(&array->data[m * array->_element_size], target) > 0) {
+            r = m - 1;
+        } else {
+            // ensure we always return the left-most element
+            while (m > 0) {
+                if (compare_func(&array->data[m * array->_element_size], &array->data[(m - 1) * array->_element_size]) != 0) {
+                    break;
+                }
+                m--;
+            }
+
+            if (out_match_index) {
+                *out_match_index = m;
+            }
+
+            return true;
+        }
+    }
+
     return false;
 }
 

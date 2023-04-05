@@ -615,6 +615,232 @@ START_TEST(test_garray_sort_with_data)
 }
 END_TEST
 
+START_TEST(test_garray_binary_search_null)
+{
+    GArray *array = NULL;
+    bool result;
+    int target = 5;
+    unsigned int match_index = 0;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    result = g_array_binary_search(NULL, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    result = g_array_binary_search(NULL, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_empty)
+{
+    GArray *array = NULL;
+    bool result;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    unsigned int match_index = 0;
+    int target = 5;
+
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+
+    ck_assert_int_eq(result, false);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_one)
+{
+    GArray *array = NULL;
+    int target;
+    bool result;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    int val = 5;
+    g_array_append_val(array, val);
+
+    unsigned int match_index = 42;
+
+    // smaller
+    target = 4;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // bigger
+    target = 6;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // match
+    target = 5;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 0);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_two)
+{
+    GArray *array = NULL;
+    int target;
+    bool result;
+    int vals[] = {4, 8};
+
+    array = g_array_new(false, false, sizeof(int));
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+
+    unsigned int match_index = 42;
+
+    // smaller
+    target = 3;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // in between
+    target = 5;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    target = 6;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    target = 7;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // bigger
+    target = 9;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // match 1
+    target = 4;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 0);
+
+    // match 2
+    target = 8;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 1);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_three)
+{
+    GArray *array = NULL;
+    int target;
+    bool result;
+    int vals[] = {4, 6, 8};
+
+    array = g_array_new(false, false, sizeof(int));
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+
+    unsigned int match_index = 42;
+
+    // smaller
+    target = 3;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // in between
+    target = 5;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    target = 7;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // bigger
+    target = 9;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, false);
+
+    // match 1
+    target = 4;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 0);
+
+    // match 2
+    target = 6;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 1);
+
+    // match 3
+    target = 8;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 2);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_same)
+{
+    GArray *array = NULL;
+    int target;
+    bool result;
+    int vals[] = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+
+    array = g_array_new(false, false, sizeof(int));
+    g_array_append_vals(array, vals, sizeof(vals) / sizeof(int));
+
+    unsigned int match_index = 42;
+
+    // searching for 10 should give us the left-most element (index 0)
+    target = 10;
+    result = g_array_binary_search(array, &target, compare_int, &match_index);
+    ck_assert_int_eq(result, true);
+    ck_assert_int_eq(match_index, 0);
+
+    g_array_free(array, true);
+}
+END_TEST
+
+START_TEST(test_garray_binary_search_extensive)
+{
+    GArray *array = NULL;
+    bool result;
+
+    array = g_array_new(false, false, sizeof(int));
+
+    const int max = 100;
+    unsigned int match_index = 42;
+
+    for (int i = 0; i < max; i++) {
+        g_array_append_val(array, i);
+
+        int j;
+        for (j = 0; j <= i; j++) {
+            result = g_array_binary_search(array, &j, compare_int, &match_index);
+            ck_assert_int_eq(result, true);
+            ck_assert_int_eq(match_index, j);
+        }
+
+        // the next element that hasn't been appended yet should not be found
+        j++;
+        result = g_array_binary_search(array, &j, compare_int, &match_index);
+        ck_assert_int_eq(result, false);
+    }
+
+    g_array_free(array, true);
+}
+END_TEST
+
 START_TEST(test_garray_set_size)
 {
     GArray *array = NULL;
@@ -897,6 +1123,14 @@ Suite* garray_suite(void)
 
     tcase_add_test(tc_core, test_garray_sort);
     tcase_add_test(tc_core, test_garray_sort_with_data);
+
+    tcase_add_test(tc_core, test_garray_binary_search_null);
+    tcase_add_test(tc_core, test_garray_binary_search_empty);
+    tcase_add_test(tc_core, test_garray_binary_search_one);
+    tcase_add_test(tc_core, test_garray_binary_search_two);
+    tcase_add_test(tc_core, test_garray_binary_search_three);
+    tcase_add_test(tc_core, test_garray_binary_search_same);
+    tcase_add_test(tc_core, test_garray_binary_search_extensive);
 
     tcase_add_test(tc_core, test_garray_set_size);
 
