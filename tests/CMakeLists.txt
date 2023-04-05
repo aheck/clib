@@ -39,3 +39,11 @@ if(LINUX)
     target_link_libraries(test_glist PRIVATE -lm)
 endif()
 add_test(NAME test_glist COMMAND test_glist)
+
+#
+# Integration
+#
+add_executable(test_integration test_integration.c)
+target_include_directories(test_integration PRIVATE ${CLIB_SRC_DIR})
+target_link_libraries(test_integration PRIVATE Check::check)
+add_test(NAME test_integration COMMAND test_integration)
