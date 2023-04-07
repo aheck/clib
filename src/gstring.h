@@ -63,6 +63,8 @@ GString* g_string_prepend_len(GString *string, const char *val, ssize_t len);
 GString* g_string_insert(GString *string, ssize_t pos, const char *val);
 GString* g_string_insert_c(GString *string, ssize_t pos, char c);
 GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssize_t len);
+GString* g_string_overwrite(GString *string, size_t pos, const char *val);
+unsigned int g_string_replace(GString *string, const char *find, const char *replace, unsigned int limit);
 GString* g_string_erase(GString *string, ssize_t pos, ssize_t len);
 GString* g_string_truncate(GString *string, size_t len);
 void g_string_vprintf(GString *string, const char *format, va_list args);
@@ -475,6 +477,85 @@ GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssiz
     string->len += len;
 
     return string;
+}
+
+GString* g_string_overwrite(GString *string, size_t pos, const char *val)
+{
+    if (pos < 0) {
+        return string;
+    }
+
+    if (val == NULL) {
+        return string;
+    }
+
+    size_t val_len = strlen(val);
+
+    if (val_len <= 0) {
+        return string;
+    }
+
+    size_t overwrite_len = pos + val_len;
+
+    // enlarge buffer?
+    if (overwrite_len >= string->allocated_len) {
+        _g_string_resize(string, overwrite_len + 1);
+    }
+
+    memcpy(&string->str[pos], val, val_len);
+
+    if (overwrite_len > string->len) {
+        string->len += val_len - pos;
+        string->str[string->len] = '\0';
+    }
+
+    return string;
+}
+
+unsigned int g_string_replace(GString *string, const char *find, const char *replace, unsigned int limit)
+{
+    unsigned int replacements = 0;
+
+    if (find == NULL || replace == NULL) {
+        return 0;
+    }
+
+    size_t find_len = strlen(find);
+    size_t replace_len = strlen(replace);
+
+    // calculate how many chars of the find and the replace string overlap
+    size_t overlap = find_len;
+    if (replace_len > find_len) {
+        overlap = replace_len - find_len;
+    } else if (find_len > replace_len) {
+        overlap = find_len - replace_len;
+    }
+
+    char *pos = string->str;
+    while ((pos = strstr(pos, find))) {
+        // overwrite overlapping part of the string
+        memcpy(pos, replace, overlap);
+
+        if (replace_len > find_len) {
+            // insert the non-overlapping part of the replace string
+            g_string_insert(string, (pos + overlap) - string->str, &replace[overlap]);
+        } else if (find_len > replace_len) {
+            // remove the non-overlapping part of the find string
+            g_string_erase(string, (pos + overlap) - string->str, find_len - replace_len);
+        }
+
+        pos += replace_len;
+        replacements++;
+
+        // enforce limit
+        if (limit != 0) {
+            if (replacements == limit) {
+                return replacements;
+            }
+        }
+    }
+
+    return replacements;
 }
 
 GString* g_string_erase(GString *string, ssize_t pos, ssize_t len)

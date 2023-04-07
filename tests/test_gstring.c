@@ -439,6 +439,121 @@ START_TEST(test_gstring_insert_c_realloc)
 }
 END_TEST
 
+START_TEST(test_gstring_overwrite)
+{
+    GString *string = NULL;
+    GString *result;
+
+    string = g_string_new("ABCDEFGHIJKLMN");
+    result = g_string_overwrite(string, 3, "def");
+
+    ck_assert_ptr_eq(result, string);
+    ck_assert_int_eq(string->len, 14);
+    ck_assert_str_eq(string->str, "ABCdefGHIJKLMN");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_overwrite_extend)
+{
+    GString *string = NULL;
+    GString *result;
+
+    string = g_string_new("ABCDEF");
+    result = g_string_overwrite(string, 3, "defghijklmn");
+
+    ck_assert_ptr_eq(result, string);
+    ck_assert_int_eq(string->len, 14);
+    ck_assert_str_eq(string->str, "ABCdefghijklmn");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_replace_null)
+{
+    GString *string = NULL;
+    unsigned int result;
+
+    string = g_string_new("A string is a string is a string");
+
+    result = g_string_replace(string, NULL, "car", 0);
+
+    ck_assert_int_eq(result, 0);
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_str_eq(string->str, "A string is a string is a string");
+
+    result = g_string_replace(string, "string", NULL, 0);
+
+    ck_assert_int_eq(result, 0);
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_str_eq(string->str, "A string is a string is a string");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_replace)
+{
+    GString *string = NULL;
+    unsigned int result;
+
+    string = g_string_new("A string is a string is a string");
+
+    // replace string with car
+    result = g_string_replace(string, "string", "car", 0);
+
+    ck_assert_int_eq(result, 3);
+    ck_assert_int_eq(string->len, 23);
+    ck_assert_str_eq(string->str, "A car is a car is a car");
+
+    // replace car with string to recreate the original string
+    result = g_string_replace(string, "car", "string", 0);
+    ck_assert_int_eq(result, 3);
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_str_eq(string->str, "A string is a string is a string");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_replace_same)
+{
+    GString *string = NULL;
+    unsigned int result;
+
+    string = g_string_new("A string is a string is a string");
+
+    // replace string with string
+    result = g_string_replace(string, "string", "string", 0);
+
+    ck_assert_int_eq(result, 3);
+    ck_assert_int_eq(string->len, 32);
+    ck_assert_str_eq(string->str, "A string is a string is a string");
+
+    g_string_free(string, true);
+}
+END_TEST
+
+START_TEST(test_gstring_replace_limit)
+{
+    GString *string = NULL;
+    unsigned int result;
+
+    string = g_string_new("A string is a string is a string");
+
+    // replace the first two occurences of string with car
+    result = g_string_replace(string, "string", "car", 2);
+
+    ck_assert_int_eq(result, 2);
+    ck_assert_int_eq(string->len, 26);
+    ck_assert_str_eq(string->str, "A car is a car is a string");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_erase)
 {
     GString *string = NULL;
@@ -661,6 +776,12 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_insert_c_realloc);
     tcase_add_test(tc_core, test_gstring_insert_len);
     tcase_add_test(tc_core, test_gstring_insert_len_realloc);
+    tcase_add_test(tc_core, test_gstring_overwrite);
+    tcase_add_test(tc_core, test_gstring_overwrite_extend);
+    tcase_add_test(tc_core, test_gstring_replace_null);
+    tcase_add_test(tc_core, test_gstring_replace);
+    tcase_add_test(tc_core, test_gstring_replace_same);
+    tcase_add_test(tc_core, test_gstring_replace_limit);
     tcase_add_test(tc_core, test_gstring_erase);
     tcase_add_test(tc_core, test_gstring_truncate);
     tcase_add_test(tc_core, test_gstring_printf_char);
