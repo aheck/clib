@@ -354,8 +354,9 @@ GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssiz
         return string;
     }
 
-    // pos beyond last char of string
+    // pos beyond last char of string?
     if (pos > (ssize_t) string->len) {
+        fprintf(stderr, "Critical: g_string_insert_len: pos (%zd) > string->len (%zu)\n", pos, string->len);
         return string;
     }
 
@@ -389,6 +390,12 @@ GString* g_string_overwrite(GString *string, size_t pos, const char *val)
 GString* g_string_overwrite_len(GString *string, size_t pos, const char *val, ssize_t len)
 {
     if (pos < 0) {
+        return string;
+    }
+
+    // pos beyond last char of string?
+    if (pos > (ssize_t) string->len) {
+        fprintf(stderr, "Critical: g_string_overwrite_len: pos (%zd) > string->len (%zu)\n", pos, string->len);
         return string;
     }
 
@@ -492,8 +499,9 @@ GString* g_string_erase(GString *string, ssize_t pos, ssize_t len)
         return string;
     }
 
-    // pos beyond last char of string
+    // pos beyond last char of string?
     if (pos > (ssize_t) (string->len - 1)) {
+        fprintf(stderr, "Critical: g_string_erase: pos (%zd) > string->len - 1 (%zu)\n", pos, string->len - 1);
         return string;
     }
 
