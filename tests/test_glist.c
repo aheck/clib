@@ -848,34 +848,58 @@ Suite* glist_suite(void)
     tcase_set_timeout(tc_core, 10);
 
     tcase_add_test(tc_core, test_glist_append);
+
     tcase_add_test(tc_core, test_glist_prepend);
+
     tcase_add_test(tc_core, test_glist_insert);
     tcase_add_test(tc_core, test_glist_insert_before);
     tcase_add_test(tc_core, test_glist_insert_sorted);
+
     tcase_add_test(tc_core, test_glist_remove);
+
     tcase_add_test(tc_core, test_glist_remove_link);
+
     tcase_add_test(tc_core, test_glist_delete_link);
+
     tcase_add_test(tc_core, test_glist_remove_all);
+
     tcase_add_test(tc_core, test_glist_length);
+
     tcase_add_test(tc_core, test_glist_copy);
+
     tcase_add_test(tc_core, test_glist_reverse);
+
     tcase_add_test(tc_core, test_glist_merge_sorted);
+
     tcase_add_test(tc_core, test_glist_sort);
     tcase_add_test(tc_core, test_glist_sort_even);
     tcase_add_test(tc_core, test_glist_sort_uneven);
     tcase_add_test(tc_core, test_glist_sort_extensive);
+
     tcase_add_test(tc_core, test_glist_insert_sorted_with_data);
+
     tcase_add_test(tc_core, test_glist_sort_with_data);
+
     tcase_add_test(tc_core, test_glist_concat);
+
     tcase_add_test(tc_core, test_glist_foreach);
+
     tcase_add_test(tc_core, test_glist_first);
+
     tcase_add_test(tc_core, test_glist_last);
+
     tcase_add_test(tc_core, test_glist_nth);
+
     tcase_add_test(tc_core, test_glist_nth_data);
+
     tcase_add_test(tc_core, test_glist_nth_prev);
+
     tcase_add_test(tc_core, test_glist_find);
+
     tcase_add_test(tc_core, test_glist_find_custom);
+
     tcase_add_test(tc_core, test_glist_position);
+
     tcase_add_test(tc_core, test_glist_index);
 
     suite_add_tcase(s, tc_core);

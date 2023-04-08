@@ -778,36 +778,44 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_new_big_string);
     tcase_add_test(tc_core, test_gstring_new_len);
     tcase_add_test(tc_core, test_gstring_sized_new);
-    tcase_add_test(tc_core, test_gstring_free);
+
     tcase_add_test(tc_core, test_gstring_assign_empty);
     tcase_add_test(tc_core, test_gstring_assign);
+
     tcase_add_test(tc_core, test_gstring_append);
     tcase_add_test(tc_core, test_gstring_append_realloc);
     tcase_add_test(tc_core, test_gstring_append_c);
     tcase_add_test(tc_core, test_gstring_append_c_realloc);
     tcase_add_test(tc_core, test_gstring_append_len);
     tcase_add_test(tc_core, test_gstring_append_len_realloc);
+
     tcase_add_test(tc_core, test_gstring_prepend);
     tcase_add_test(tc_core, test_gstring_prepend_realloc);
     tcase_add_test(tc_core, test_gstring_prepend_len);
     tcase_add_test(tc_core, test_gstring_prepend_len_realloc);
     tcase_add_test(tc_core, test_gstring_prepend_c);
     tcase_add_test(tc_core, test_gstring_prepend_c_realloc);
+
     tcase_add_test(tc_core, test_gstring_insert);
     tcase_add_test(tc_core, test_gstring_insert_realloc);
     tcase_add_test(tc_core, test_gstring_insert_c);
     tcase_add_test(tc_core, test_gstring_insert_c_realloc);
     tcase_add_test(tc_core, test_gstring_insert_len);
     tcase_add_test(tc_core, test_gstring_insert_len_realloc);
+
     tcase_add_test(tc_core, test_gstring_overwrite);
     tcase_add_test(tc_core, test_gstring_overwrite_extend);
+
     tcase_add_test(tc_core, test_gstring_replace_null);
     tcase_add_test(tc_core, test_gstring_replace_empty_find);
     tcase_add_test(tc_core, test_gstring_replace);
     tcase_add_test(tc_core, test_gstring_replace_same);
     tcase_add_test(tc_core, test_gstring_replace_limit);
+
     tcase_add_test(tc_core, test_gstring_erase);
+
     tcase_add_test(tc_core, test_gstring_truncate);
+
     tcase_add_test(tc_core, test_gstring_printf_char);
     tcase_add_test(tc_core, test_gstring_printf_int);
     tcase_add_test(tc_core, test_gstring_printf_hex);
@@ -815,8 +823,12 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_printf_float);
     tcase_add_test(tc_core, test_gstring_printf_float_precision);
     tcase_add_test(tc_core, test_gstring_printf);
+
     tcase_add_test(tc_core, test_gstring_append_printf);
+
     tcase_add_test(tc_core, test_gstring_equal);
+
+    tcase_add_test(tc_core, test_gstring_free);
 
     suite_add_tcase(s, tc_core);
 

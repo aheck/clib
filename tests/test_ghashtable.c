@@ -473,18 +473,28 @@ Suite* ghashtable_suite(void)
     tc_core = tcase_create("Core");
 
     tcase_add_test(tc_core, test_gint_hash);
+
     tcase_add_test(tc_core, test_ghashtable_new);
     tcase_add_test(tc_core, test_ghashtable_new_full);
+
     tcase_add_test(tc_core, test_ghashtable_calc_start_slot);
+
     tcase_add_test(tc_core, test_ghashtable_find_free_slot);
+
     tcase_add_test(tc_core, test_ghashtable_insert_lookup);
+
     tcase_add_test(tc_core, test_ghashtable_foreach);
+
     tcase_add_test(tc_core, test_ghashtable_remove);
     tcase_add_test(tc_core, test_ghashtable_lookup_after_remove);
     tcase_add_test(tc_core, test_ghashtable_insert_after_remove);
+
     tcase_add_test(tc_core, test_ghashtable_double_insert);
+
     tcase_add_test(tc_core, test_ghashtable_resize);
+
     tcase_add_test(tc_core, test_ghashtable_insert_extensive);
+
     tcase_add_test(tc_core, test_ghashtable_free_keys_and_values);
 
     suite_add_tcase(s, tc_core);
