@@ -64,6 +64,7 @@ GString* g_string_insert(GString *string, ssize_t pos, const char *val);
 GString* g_string_insert_c(GString *string, ssize_t pos, char c);
 GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssize_t len);
 GString* g_string_overwrite(GString *string, size_t pos, const char *val);
+GString* g_string_overwrite_len(GString *string, size_t pos, const char *val, ssize_t len);
 unsigned int g_string_replace(GString *string, const char *find, const char *replace, unsigned int limit);
 GString* g_string_erase(GString *string, ssize_t pos, ssize_t len);
 GString* g_string_truncate(GString *string, size_t len);
@@ -481,31 +482,30 @@ GString* g_string_insert_len(GString *string, ssize_t pos, const char *val, ssiz
 
 GString* g_string_overwrite(GString *string, size_t pos, const char *val)
 {
-    if (pos < 0) {
-        return string;
-    }
-
     if (val == NULL) {
         return string;
     }
 
-    size_t val_len = strlen(val);
+    return g_string_overwrite_len(string, pos, val, strlen(val));
+}
 
-    if (val_len <= 0) {
+GString* g_string_overwrite_len(GString *string, size_t pos, const char *val, ssize_t len)
+{
+    if (pos < 0) {
         return string;
     }
 
-    size_t overwrite_len = pos + val_len;
+    size_t overwrite_len = pos + len;
 
     // enlarge buffer?
     if (overwrite_len >= string->allocated_len) {
         _g_string_resize(string, overwrite_len + 1);
     }
 
-    memcpy(&string->str[pos], val, val_len);
+    memcpy(&string->str[pos], val, len);
 
     if (overwrite_len > string->len) {
-        string->len += val_len - pos;
+        string->len += len - pos;
         string->str[string->len] = '\0';
     }
 
@@ -520,8 +520,35 @@ unsigned int g_string_replace(GString *string, const char *find, const char *rep
         return 0;
     }
 
+    if (replace[0] == '\0') {
+        return 0;
+    }
+
     size_t find_len = strlen(find);
     size_t replace_len = strlen(replace);
+
+    // if the find string is empty we insert the replace string at the beginning
+    // and end of the string as well as after each character
+    if (find[0] == '\0') {
+        for (ssize_t i = 0; i < string->len; i++) {
+            g_string_insert(string, i, replace);
+            i += replace_len;
+            replacements++;
+
+            if (limit != 0) {
+                if (replacements == limit) {
+                    break;
+                }
+            }
+        }
+
+        if (limit == 0 || limit < replacements) {
+            g_string_append(string, "_");
+            replacements++;
+        }
+
+        return replacements;
+    }
 
     // calculate how many chars of the find and the replace string overlap
     size_t overlap = find_len;

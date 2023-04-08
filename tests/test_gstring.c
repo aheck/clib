@@ -494,6 +494,29 @@ START_TEST(test_gstring_replace_null)
 }
 END_TEST
 
+START_TEST(test_gstring_replace_empty_find)
+{
+    GString *string = NULL;
+    unsigned int result;
+
+    string = g_string_new("");
+    result = g_string_replace(string, "", "_", 0);
+
+    ck_assert_int_eq(result, 1);
+    ck_assert_int_eq(string->len, 1);
+    ck_assert_str_eq(string->str, "_");
+
+    g_string_assign(string, "This is my string!");
+    result = g_string_replace(string, "", "_", 0);
+
+    ck_assert_int_eq(result, 19);
+    ck_assert_int_eq(string->len, 37);
+    ck_assert_str_eq(string->str, "_T_h_i_s_ _i_s_ _m_y_ _s_t_r_i_n_g_!_");
+
+    g_string_free(string, true);
+}
+END_TEST
+
 START_TEST(test_gstring_replace)
 {
     GString *string = NULL;
@@ -779,6 +802,7 @@ Suite* gstring_suite(void)
     tcase_add_test(tc_core, test_gstring_overwrite);
     tcase_add_test(tc_core, test_gstring_overwrite_extend);
     tcase_add_test(tc_core, test_gstring_replace_null);
+    tcase_add_test(tc_core, test_gstring_replace_empty_find);
     tcase_add_test(tc_core, test_gstring_replace);
     tcase_add_test(tc_core, test_gstring_replace_same);
     tcase_add_test(tc_core, test_gstring_replace_limit);
