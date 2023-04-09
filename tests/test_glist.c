@@ -6,9 +6,9 @@
 #define _CLIB_IMPL 1
 #include "glist.h"
 
-int32_t simple_comp_func(const void *a, const void *b)
+int simple_comp_func(const void *a, const void *b)
 {
-    return ((int32_t) (int64_t) a) - ((int32_t) (int64_t) b);
+    return ((int) (int64_t) a) - ((int) (int64_t) b);
 }
 
 

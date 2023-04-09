@@ -43,8 +43,8 @@ void qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, 
 #include <stdbool.h>
 #include <string.h>
 
-typedef int32_t(*GCompareFunc) (const void *a, const void *b);
-typedef int32_t(*GCompareDataFunc) (const void *a, const void *b, void *user_data);
+typedef int(*GCompareFunc) (const void *a, const void *b);
+typedef int(*GCompareDataFunc) (const void *a, const void *b, void *user_data);
 typedef void (*GDestroyNotify)(void *data);
 
 typedef struct GArray {

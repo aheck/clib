@@ -27,8 +27,8 @@
 #define _GLIST_H
 #include <math.h>
 
-typedef int32_t(*GCompareFunc) (const void *a, const void *b);
-typedef int32_t(*GCompareDataFunc) (const void *a, const void *b, void *user_data);
+typedef int(*GCompareFunc) (const void *a, const void *b);
+typedef int(*GCompareDataFunc) (const void *a, const void *b, void *user_data);
 typedef void(*GFunc) (void *data, void *user_data);
 
 typedef struct GList {
@@ -39,7 +39,7 @@ typedef struct GList {
 
 GList* g_list_append(GList *list, void *data);
 GList* g_list_prepend(GList *list, void *data);
-GList* g_list_insert(GList *list, void *data, int32_t position);
+GList* g_list_insert(GList *list, void *data, int position);
 GList* g_list_insert_before(GList *list, GList *sibling, void *data);
 GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func);
 GList* g_list_remove(GList *list, const void *data);
@@ -64,8 +64,8 @@ void* g_list_nth_data(GList *list, uint32_t n);
 GList* g_list_nth_prev(GList *list, uint32_t n);
 GList* g_list_find(GList *list, const void *data);
 GList* g_list_find_custom(GList *list, const void *data, GCompareFunc func);
-int32_t g_list_position(GList *list, GList *llink);
-int32_t g_list_index(GList *list, const void *data);
+int g_list_position(GList *list, GList *llink);
+int g_list_index(GList *list, const void *data);
 
 
 #ifdef _CLIB_IMPL
@@ -106,7 +106,7 @@ GList* g_list_prepend(GList *list, void *data)
     return new_entry;
 }
 
-GList* g_list_insert(GList *list, void *data, int32_t position)
+GList* g_list_insert(GList *list, void *data, int position)
 {
     if (list == NULL) {
         return g_list_append(list, data);
@@ -118,7 +118,7 @@ GList* g_list_insert(GList *list, void *data, int32_t position)
 
     GList *last;
     GList *cur = list;
-    for (int32_t i = 0; cur; last = cur, cur = cur->next, i++) {
+    for (int i = 0; cur; last = cur, cur = cur->next, i++) {
         if (position != i) {
             continue;
         }
@@ -188,7 +188,7 @@ GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func)
 
     GList *cur = list;
     while (cur) {
-        int32_t comp = func(cur->data, data);
+        int comp = func(cur->data, data);
 
         if (comp >= 0) {
             GList * new_elem = g_list_alloc();
@@ -455,7 +455,7 @@ GList* _g_list_merge_sorted(GList *list1, GList *list2, GCompareFunc compare_fun
     }
 
     new_cur = new_list;
-    int32_t comp;
+    int comp;
 
     while (list1 || list2) {
         if (list1 == NULL) {
@@ -691,7 +691,7 @@ GList* g_list_find_custom(GList *list, const void *data, GCompareFunc func)
     return NULL;
 }
 
-int32_t g_list_position(GList *list, GList *llink)
+int g_list_position(GList *list, GList *llink)
 {
     uint32_t i;
 
@@ -704,7 +704,7 @@ int32_t g_list_position(GList *list, GList *llink)
     return -1;
 }
 
-int32_t g_list_index(GList *list, const void *data)
+int g_list_index(GList *list, const void *data)
 {
     uint32_t i;
 
