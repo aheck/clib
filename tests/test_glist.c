@@ -77,7 +77,7 @@ START_TEST(test_glist_insert)
     GList *list = NULL;
 
     // test insert on empty list and with position that is way too large
-    list = g_list_insert(list, "Element 1", 0);
+    list = g_list_insert(list, "Element 1", 20);
     ck_assert_ptr_nonnull(list);
     ck_assert_ptr_null(list->prev);
     ck_assert_ptr_null(list->next);
@@ -101,7 +101,7 @@ START_TEST(test_glist_insert)
     ck_assert_int_eq(g_list_length(list), 3);
 
     // test insert in the middle of a list
-    g_list_insert(list, "New Element", 1);
+    list = g_list_insert(list, "New Element", 1);
 
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 4);
@@ -110,15 +110,30 @@ START_TEST(test_glist_insert)
     ck_assert_str_eq(list->next->next->data, "Element 2");
     ck_assert_str_eq(list->next->next->next->data, "Element 3");
 
+    // test insert at the beginning of the list
+    GList *old_list = list;
+    list = g_list_insert(list, "New First Element", 0);
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert(list != old_list);
+    ck_assert_int_eq(g_list_length(list), 5);
+    ck_assert_str_eq(list->data, "New First Element");
+    ck_assert_str_eq(list->next->data, "Element 1");
+    ck_assert_str_eq(list->next->next->data, "New Element");
+    ck_assert_str_eq(list->next->next->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->next->next->data, "Element 3");
+
+    // test reversal of list
     list = g_list_reverse(list);
 
     ck_assert_ptr_nonnull(list);
-    ck_assert_int_eq(g_list_length(list), 4);
+    ck_assert_int_eq(g_list_length(list), 5);
 
     ck_assert_str_eq(list->data, "Element 3");
     ck_assert_str_eq(list->next->data, "Element 2");
     ck_assert_str_eq(list->next->next->data, "New Element");
     ck_assert_str_eq(list->next->next->next->data, "Element 1");
+    ck_assert_str_eq(list->next->next->next->next->data, "New First Element");
 
     g_list_free(list);
 }
@@ -134,22 +149,41 @@ START_TEST(test_glist_insert_before)
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 3);
 
-    g_list_insert_before(list, list->next, "New Element");
+    list = g_list_insert_before(list, list->next, "New Element");
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 4);
 
     ck_assert_str_eq(list->data, "Element 1");
     ck_assert_str_eq(list->next->data, "New Element");
     ck_assert_str_eq(list->next->next->data, "Element 2");
     ck_assert_str_eq(list->next->next->next->data, "Element 3");
 
+    // insert before first element
+    GList *old_list = list;
+    list = g_list_insert_before(list, list, "New First Element");
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert(list != old_list);
+    ck_assert_int_eq(g_list_length(list), 5);
+
+    ck_assert_str_eq(list->data, "New First Element");
+    ck_assert_str_eq(list->next->data, "Element 1");
+    ck_assert_str_eq(list->next->next->data, "New Element");
+    ck_assert_str_eq(list->next->next->next->data, "Element 2");
+    ck_assert_str_eq(list->next->next->next->next->data, "Element 3");
+
+    // test reversal of list
     list = g_list_reverse(list);
 
     ck_assert_ptr_nonnull(list);
-    ck_assert_int_eq(g_list_length(list), 4);
+    ck_assert_int_eq(g_list_length(list), 5);
 
     ck_assert_str_eq(list->data, "Element 3");
     ck_assert_str_eq(list->next->data, "Element 2");
     ck_assert_str_eq(list->next->next->data, "New Element");
     ck_assert_str_eq(list->next->next->next->data, "Element 1");
+    ck_assert_str_eq(list->next->next->next->next->data, "New First Element");
 
     g_list_free(list);
 }
@@ -172,9 +206,15 @@ START_TEST(test_glist_insert_sorted)
     list = g_list_insert_sorted(list, (void*) 8, simple_comp_func);
     list = g_list_insert_sorted(list, (void*) 3, simple_comp_func);
     list = g_list_insert_sorted(list, (void*) 2, simple_comp_func);
+
+    // test insert at the beginning of the list
+    GList *old_list = list;
     list = g_list_insert_sorted(list, (void*) 0, simple_comp_func);
+    ck_assert(list != old_list);
+
     list = g_list_insert_sorted(list, (void*) 5, simple_comp_func);
     list = g_list_insert_sorted(list, (void*) 6, simple_comp_func);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->data, 0);
 
     ck_assert_ptr_nonnull(list);
     ck_assert_int_eq(g_list_length(list), 10);
@@ -207,15 +247,24 @@ END_TEST
 START_TEST(test_glist_remove)
 {
     GList *list = NULL;
+    char *element0 = "Element 0";
     char *element1 = "Element 1";
     char *element2 = "Element 2";
     char *element3 = "Element 3";
 
+    list = g_list_append(list, element0);
     list = g_list_append(list, element1);
     list = g_list_append(list, element2);
     list = g_list_append(list, element3);
 
     ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 4);
+
+    // test removal of the first element
+    GList *old_list = list;
+    list = g_list_remove(list, element0);
+    ck_assert_ptr_nonnull(list);
+    ck_assert(list != old_list);
     ck_assert_int_eq(g_list_length(list), 3);
 
     list = g_list_remove(list, element2);
@@ -243,12 +292,24 @@ START_TEST(test_glist_remove_link)
     GList *list = NULL;
     GList *removed_elem = NULL;
 
+    list = g_list_append(list, "Element 0");
     list = g_list_append(list, "Element 1");
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
 
+    // test removal of the first element
     ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 4);
+
+    removed_elem = list;
+    GList *old_list = list;
+    list = g_list_remove_link(list, removed_elem);
+    ck_assert_ptr_nonnull(list);
+    ck_assert(list != old_list);
     ck_assert_int_eq(g_list_length(list), 3);
+    ck_assert_str_eq(removed_elem->data, "Element 0");
+    ck_assert_str_eq(list->data, "Element 1");
+    g_list_free(removed_elem);
 
     removed_elem = list->next;
     list = g_list_remove_link(list, removed_elem);
@@ -279,12 +340,21 @@ END_TEST
 START_TEST(test_glist_delete_link)
 {
     GList *list = NULL;
+    list = g_list_append(list, "Element 0");
     list = g_list_append(list, "Element 1");
     list = g_list_append(list, "Element 2");
     list = g_list_append(list, "Element 3");
 
     ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 4);
+
+    // test removal of the first element
+    GList *old_list = list;
+    list = g_list_delete_link(list, list);
+    ck_assert_ptr_nonnull(list);
+    ck_assert(list != old_list);
     ck_assert_int_eq(g_list_length(list), 3);
+    ck_assert_str_eq(list->data, "Element 1");
 
     list = g_list_delete_link(list, list->next);
     ck_assert_ptr_nonnull(list);

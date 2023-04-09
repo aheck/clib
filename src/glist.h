@@ -125,11 +125,18 @@ GList* g_list_insert(GList *list, void *data, int32_t position)
 
         GList *new_elem = g_list_alloc();
 
-        cur->prev->next = new_elem;
+        if (cur->prev) {
+            cur->prev->next = new_elem;
+        }
         new_elem->data = data;
         new_elem->prev = cur->prev;
         new_elem->next = cur;
         cur->prev = new_elem;
+
+        // new list start?
+        if (new_elem->prev == NULL) {
+            return new_elem;
+        }
 
         return list;
     }
@@ -164,6 +171,11 @@ GList* g_list_insert_before(GList *list, GList *sibling, void *data)
     new_elem->next = sibling;
 
     sibling->prev = new_elem;
+
+    // new list start?
+    if (new_elem->prev == NULL) {
+        return new_elem;
+    }
 
     return list;
 }
