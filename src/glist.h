@@ -75,9 +75,6 @@ GList* g_list_append(GList *list, void *data)
     GList *last = g_list_last(list);
 
     GList *new_entry = g_list_alloc();
-    if (new_entry == NULL) {
-        return NULL;
-    }
 
     new_entry->data = data;
     new_entry->prev = last;
@@ -97,9 +94,6 @@ GList* g_list_prepend(GList *list, void *data)
     GList *first = g_list_first(list);
 
     GList *new_entry = g_list_alloc();
-    if (new_entry == NULL) {
-        return NULL;
-    }
 
     new_entry->data = data;
     new_entry->prev = NULL;
@@ -130,23 +124,19 @@ GList* g_list_insert(GList *list, void *data, int32_t position)
         }
 
         GList *new_elem = g_list_alloc();
-        if (new_elem == NULL) {
-            return list;
-        }
+
         cur->prev->next = new_elem;
         new_elem->data = data;
         new_elem->prev = cur->prev;
         new_elem->next = cur;
         cur->prev = new_elem;
+
         return list;
     }
 
     // we reached the end of the list but didn't find position
     // so we append to the end of the list
     GList *new_elem = g_list_alloc();
-    if (new_elem == NULL) {
-        return list;
-    }
 
     last->next = new_elem;
     new_elem->data = data;
@@ -163,9 +153,6 @@ GList* g_list_insert_before(GList *list, GList *sibling, void *data)
     }
 
     GList *new_elem = g_list_alloc();
-    if (new_elem == NULL) {
-        return NULL;
-    }
 
     new_elem->data = data;
 
@@ -193,9 +180,6 @@ GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func)
 
         if (comp >= 0) {
             GList * new_elem = g_list_alloc();
-            if (new_elem == NULL) {
-                return list;
-            }
 
             new_elem->data = data;
             new_elem->next = cur;
@@ -212,9 +196,6 @@ GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func)
 
         if (cur->next == NULL) {
             GList * new_elem = g_list_alloc();
-            if (new_elem == NULL) {
-                return list;
-            }
 
             new_elem->data = data;
             new_elem->next = NULL;
@@ -393,13 +374,6 @@ GList* g_list_copy(GList *list)
 
     while (list) {
         GList *new_elem = g_list_alloc();
-        if (new_elem == NULL) {
-            if (new_list) {
-                g_list_free(new_list);
-            }
-
-            return NULL;
-        }
 
         if (new_list == NULL) {
             new_list = new_elem;
