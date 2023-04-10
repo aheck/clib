@@ -11,6 +11,12 @@ int simple_comp_func(const void *a, const void *b)
     return ((int) (int64_t) a) - ((int) (int64_t) b);
 }
 
+int simple_comp_data_func(const void *a, const void *b, void *user_data)
+{
+    ck_assert_int_eq(*((int*) user_data), 42);
+    return ((int) (int64_t) a) - ((int) (int64_t) b);
+}
+
 
 START_TEST(test_glist_append)
 {
@@ -239,6 +245,25 @@ START_TEST(test_glist_insert_sorted)
     ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 8);
     cur = cur->next;
     ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 9);
+
+    g_list_free(list);
+}
+END_TEST
+
+START_TEST(test_glist_insert_sorted_with_data)
+{
+    GList *list = NULL;
+    int user_data = 42;
+
+    list = g_list_insert_sorted_with_data(list, (void*) 9, simple_comp_data_func, &user_data);
+    list = g_list_insert_sorted_with_data(list, (void*) 1, simple_comp_data_func, &user_data);
+    list = g_list_insert_sorted_with_data(list, (void*) 4, simple_comp_data_func, &user_data);
+
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 3);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->data, 1);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->next->data, 4);
+    ck_assert_int_eq((uint32_t) (uint64_t) list->next->next->data, 9);
 
     g_list_free(list);
 }
@@ -693,13 +718,48 @@ START_TEST(test_glist_sort_extensive)
 }
 END_TEST
 
-START_TEST(test_glist_insert_sorted_with_data)
-{
-}
-END_TEST
-
 START_TEST(test_glist_sort_with_data)
 {
+    GList *list = NULL;
+    list = g_list_append(list, (void*) 7);
+    list = g_list_append(list, (void*) 1);
+    list = g_list_append(list, (void*) 8);
+    list = g_list_append(list, (void*) 2);
+    list = g_list_append(list, (void*) 3);
+    list = g_list_append(list, (void*) 5);
+    list = g_list_append(list, (void*) 9);
+    list = g_list_append(list, (void*) 4);
+    list = g_list_append(list, (void*) 6);
+    list = g_list_append(list, (void*) 0);
+
+    int user_data = 42;
+
+    list = g_list_sort_with_data(list, simple_comp_data_func, &user_data);
+    ck_assert_ptr_nonnull(list);
+    ck_assert_int_eq(g_list_length(list), 10);
+
+    GList *cur = list;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 0);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 1);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 2);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 3);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 4);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 5);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 6);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 7);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 8);
+    cur = cur->next;
+    ck_assert_int_eq((uint32_t) (uint64_t) cur->data, 9);
+
+    g_list_free(list);
 }
 END_TEST
 
@@ -925,6 +985,8 @@ Suite* glist_suite(void)
     tcase_add_test(tc_core, test_glist_insert_before);
     tcase_add_test(tc_core, test_glist_insert_sorted);
 
+    tcase_add_test(tc_core, test_glist_insert_sorted_with_data);
+
     tcase_add_test(tc_core, test_glist_remove);
 
     tcase_add_test(tc_core, test_glist_remove_link);
@@ -945,8 +1007,6 @@ Suite* glist_suite(void)
     tcase_add_test(tc_core, test_glist_sort_even);
     tcase_add_test(tc_core, test_glist_sort_uneven);
     tcase_add_test(tc_core, test_glist_sort_extensive);
-
-    tcase_add_test(tc_core, test_glist_insert_sorted_with_data);
 
     tcase_add_test(tc_core, test_glist_sort_with_data);
 
