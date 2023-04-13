@@ -180,7 +180,7 @@ GList* g_list_insert_before(GList *list, GList *sibling, void *data)
     return list;
 }
 
-#define _G_LIST_INSERT_SORTED(list, data, func, user_data, call_compare)\
+#define _G_LIST_INSERT_SORTED(call_compare)\
     if (list == NULL) {\
         return g_list_append(list, data);\
     }\
@@ -223,12 +223,12 @@ GList* g_list_insert_before(GList *list, GList *sibling, void *data)
 
 GList* g_list_insert_sorted(GList *list, void *data, GCompareFunc func)
 {
-    _G_LIST_INSERT_SORTED(list, data, func, NULL, func(cur->data, data));
+    _G_LIST_INSERT_SORTED(func(cur->data, data));
 }
 
 GList* g_list_insert_sorted_with_data(GList *list, void *data, GCompareDataFunc func, void *user_data)
 {
-    _G_LIST_INSERT_SORTED(list, data, func, NULL, func(cur->data, data, user_data));
+    _G_LIST_INSERT_SORTED(func(cur->data, data, user_data));
 }
 
 GList* g_list_remove(GList *list, const void *data)
